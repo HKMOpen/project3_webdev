@@ -56,7 +56,8 @@ include 'nav.php';
 					<td><input type="submit" value="Log in" /></td>
 				</tr>
 			</table>
-		</form>		
+		</form>
+		<p>New User? <a style="border: 1px solid black; background-color: white;" href="register.php">Click here to register!</a></p>	
 <?php
 echo "<p>$error</p>";
 }

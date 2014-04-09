@@ -237,4 +237,28 @@ function isPending($requestor, $requestee){
 	return in_array($requestor, $pend);
 }
 
+function requestChangePassword($username, $email, $ip) {
+	//generate random key, store it in the DB, send authentication email
+	//to the user's email address, using link to chpasswd.php w/ key as a GET variable
+	//also store user's IP address in DB to make sure it matches when authenticating
+	
+}
+
+function changePassword($username, $newPassword) {
+	//change the user's password in the database to the new password
+	
+}
+
+function requestRegisterAuthentication($username, $email, $password, $ip) {
+	//similar to requestChangePassword...
+	//send authentication email to user
+	 
+}
+
+function authenticateNewUser($username, $key, $ip) {
+	//checks that the given key and IP match the key and IP stored in the DB
+	//authenticates the user and notifies the admins for approval
+	
+}
+
 ?>

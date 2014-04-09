@@ -145,6 +145,22 @@ if(isset($_POST['submitNewSummaryFlag'])) {
 }
 //END CHANGING NEWLY SUBMITTED USER INFORMATION
 
+//BEGIN ADDING COMMENT TO WALL
+
+if (isset($_POST['submitCommentFlag'])) {
+	$sender = $_POST['sender'];
+	$receiver = $_POST['receiver'];
+	$message = sanitize($_POST['newComment']);
+	if (strlen($message) > 500) {
+		$message = substr($message, 0, 500);
+	}
+	
+	//insert comment into database here...
+	
+}
+
+//END ADDING COMMENT TO WALL
+
 $user = getUser($uname);
 $userSummary = getUserSummary($uname);
 if (is_null($userSummary)) { $userSummary = "";}
@@ -155,7 +171,31 @@ if (is_null($userSummary)) { $userSummary = "";}
 <div class="wrapper">
 
 	<div class="left">
-<?php echo "<h3>$uname</h3>"; ?>
+<?php 
+echo "<h3>$uname</h3>";
+
+if (isset($_POST['editPasswordFlag'])) {
+	
+	$username = $_POST['username'];
+	$email = $_POST['email'];
+	$ip = $_POST['ip'];
+	requestChangePassword($username, $email, $ip);
+
+	echo "<p>An email has been sent to you for changing your password.</p>";
+
+} else if ($_SESSION['username'] == $uname && $whiteListed) { 
+//Edit password button ?>
+	
+	<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
+		<input type="submit" value="Edit password"/>
+		<input type="hidden" name="email" value="
+			<?php echo getUser($_SESSION['username'])->email; ?>" />
+		<input type="hidden" name="username" value="<?php echo $_SESSION['username']; ?>" />
+		<input type="hidden" name="ip" value="<?php echo $_SERVER['REMOTE_ADDR']; ?>" />
+		<input type="hidden" name="editPasswordFlag" value="true"/>
+	</form>
+	
+<?php } ?>
 
 <!-- display Add Friend button only when the user isn't guest
       and isn't already friends -->
@@ -262,6 +302,57 @@ if (isset ( $_POST ['editSummaryFlag'] )) { ?>
 		<input type="hidden" name="editSummaryFlag" value="true" />
 	</form>
 <?php } ?>
+
+<!-- This is just the blueprint for the Wall, 
+this will be loaded into profiles via the 
+database for each user. My idea is to have
+each "conversation" within a "wallPost" div,
+and original comments within a "comment" div,
+and replies within a "reply" div. -->
+
+<div id="wall">
+	<h3>The Wall:</h3>
+	<?php if(isset($_POST['addCommentFlag'])) {
+	//display the text area for adding a comment, with a "Post comment" button ?>
+	
+		<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
+			<textarea name="newComment" rows="6" cols="30">What's on your mind?</textarea>
+			<input type="submit" value="Post comment" />
+			<input type="hidden" name="sender" value="<?php echo $_SESSION['username']; ?>" />
+			<input type="hidden" name="receiver" value="<?php echo $uname; ?>" />
+			<input type="hidden" name="submitCommentFlag" value="true" />
+		</form>
+	
+	<?php } else if ((isFriend($_SESSION['username'], $uname) 
+		|| $_SESSION['username'] == $uname) && $whiteListed) {
+		//display "Add comment" button?>
+		
+		<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
+			<input type="submit" value="Add comment"/>
+			<input type="hidden" name="addCommentFlag" value="true" />
+		</form>
+		
+	<?php }?>
+	
+	<div class="wallPost">
+		<p id="comment"><b>User1:</b> This is a wall post!</p>
+			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
+				<input type="submit" value="Reply" align="right"/>
+				<input type="hidden" name="addReplyFlag" value="true"/>
+				<!-- NOTE: need some way to save the fact that the sender is
+				replying to a specific comment/reply... -->
+			</form>
+		
+		<p id="reply"><b>User 2:</b> Hey User1 what's up?</p>
+			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
+				<input type="submit" value="Reply" align="right"/>
+				<input type="hidden" name="addReplyFlag" value="true"/>
+			</form>
+		
+	</div>
+	
+</div>
+<!-- End Wall blueprint -->
 
 </div>
 </div>

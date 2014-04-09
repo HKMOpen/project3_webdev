@@ -160,6 +160,22 @@ text-align:center;
 	color: grey;
 }
 
+a:link {
+	color: blue;
+}
+
+a:visited {
+	color: purple;
+}
+
+a:hover {
+	color: cyan;
+}
+
+a:active {
+	color: grey;
+}
+
 .warning {
 color:red;
 }
@@ -180,4 +196,24 @@ float:left;
 img.smallpic {
 	width: 50px;
 	height:50px;
+}
+
+#wall {
+	border: 3px solid black;
+	background-color: grey;
+}
+
+.wallPost {
+	border-top: 1px solid black;
+}
+
+#comment {
+	background-color: white;
+	color: blue;
+}
+
+#reply {
+	color: red;
+	margin-left: 40px;
+	background-color: white;
 }
