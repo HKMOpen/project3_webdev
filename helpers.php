@@ -1,40 +1,10 @@
 <?php
-
-// code based off of CT310 Lecture 10 example
-
-class User {
-	public $username; // uname must be > 3 characters (for salt)
-	public $passwd;
-	public $name; 
-	public $gender;
-	public $phone;
-	public $email;
-	public $admin;
-	public $pic; // location of profile picture
-	public $friends; // list of curerent friends
-	public $pending; // list of pending friend requests
-	
-	/* This function provides a complete tab delimeted dump of the contents/values of an object */
-	public function contents() {
-		$vals = array_values(get_object_vars($this));
-		return( array_reduce($vals, create_function('$a,$b','return is_null($a) ? "$b" : "$a"."\t"."$b";')));
-	}
-	/* Companion to contents, dumps heading/member names in tab delimeted format */
-	public function headings() {
-		$vals = array_keys(get_object_vars($this));
-		return( array_reduce($vals, create_function('$a,$b','return is_null($a) ? "$b" : "$a"."\t"."$b";')));
-	}
-	
-}
-
-class UserSummary {
-	public $username;
-	public $summary;
-}
+include_once "Querries.php";
+include_once "User.php";
 
 define("RANDOM_32_CHAR_KEY", substr(md5("random"), 0, 31).'~');
 
-function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friendList, $pendingList) {
+function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friendList=null, $pendingList=null, $bio) {
 	$u = new User();
 	$u->username = $uname;
 	$u->passwd  = $pass;
@@ -46,6 +16,7 @@ function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $p
 	$u->pic = $picture;
 	$u->friends  = $friendList;
 	$u->pending  = $pendingList;
+	$u->bio = $bio;
 	return $u;
 }
 
@@ -58,106 +29,96 @@ function setupDefaultUsers() {
 }
 
 function writeUsers($users) {
-	$fh = fopen('users.tsv', 'w+') or die("Can't open file");
-	fwrite($fh, $users[0]->headings()."\n");
-	for ($i = 0; $i < count($users); $i++) {
-		fwrite($fh, $users[$i]->contents()."\n");
+	$q = new Querries();
+	$db = $q->getDB();
+	for($users as $user)
+	{
+		$db->querry(sprintf($q->CREATE_USER, $user->username, $user->passwd, $user->name, $user->gender, $user->phone, $user->mail, $user->admin, $user->pic, $user->bio));
 	}
-	fclose($fh);
+	$db->close();
 }
 
+function addPendingUser($user)
+{
+	$users = array();
+	$users[0]=$user;
+	writeUsers($user);
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->querry(sprintf($q->ADD_PENDING_USER, $user->username));
+	$db->close();
+}	
+
 function readUsers() {
-	if (! file_exists('users.tsv')) { setupDefaultUsers(); }
-	$contents = file_get_contents('users.tsv');
-	$lines    = preg_split("/\r|\n/", $contents, -1, PREG_SPLIT_NO_EMPTY);
-	$keys     = preg_split("/\t/", $lines[0]);
-	$i        = 0;
-	for ($j = 1; $j < count($lines); $j++) {
-		$vals = preg_split("/\t/", $lines[$j]);
-		if (count($vals) > 1) {
-			$u = new User();
-			for ($k = 0; $k < count($vals); $k++) {
-				$u->$keys[$k] = $vals[$k];
-			}
-			$users[$i] = $u;
-			$i++;
-		}
+	$q = new Querries();
+	$db = $q->getDB();
+	$array = $db->querry($q->GET_ALL_USER_NAMES);
+	$retVal=array();
+	if(!($array instanceof Sqlite3Result))
+	{
+		return;
 	}
-	return $users;
+
+  	while($res = $array->fetchArray())
+	{ 
+		$user = getUser($res["username"]);
+        	array_push($retVal, $user);
+        } 
+	$db->close();
+	return $retVal;
+	
 }
 
 function getUser($uname) {
-	if ($uname != "") {
-		return getUserHelper(readUsers(), $uname);
+	$q = new Querries();
+	$db = $q->getDB();
+	$array = $db->querry(sprintf($q->GET_USER, $uname));
+	if(!($array instanceof Sqlite3Result))
+	{
+		return;
 	}
-	else {
-		return NULL;
-	}
+	$res = $array->fetchArray()
+  	$user = makeNewUser($res["username"],$res["password"],$res["name"],$res["gender"],$res["phone"],$res["email"],$res["admin"],$res["pictureLocation"], null, null, $res["bio"]);
+	$db->close();
+	$user->friends = getFriends($uname);
+	$user->pending = getRequestUsers($uname);
+
+	return $user;
 }
 
-function getUserHelper($allUsers, $uname) {
 
-	for ($i = 0; $i < count($allUsers); $i++) {
-		if ($allUsers[$i]->username == $uname) {
-			return $allUsers[$i];
-		}
-	}
-	return NULL;
-}
-
-function getHash($users, $uname) {
-	$hash = '';
-	foreach ($users as $u ) {
-		if ($u->username == $uname) {
-			$hash = $u->passwd;
-		}
-	}
-	return $hash;
+function getHash($uname) {
+	
+	getUser($uname);
+	return getUser($uname)->passwd;
 }
 
 function getUserSummary($username) {
-	if (!empty($username)) {
-		return getUserSummaryHelper(readUserSummaries(), $username);
-	}
-	else {
-		return NULL;
-	}
+	getUser($username)->summary
 }
 
-function getUserSummaryHelper($allUserSummaries, $uname) {
-	foreach ($allUserSummaries as $entry) {
-		if ($entry->username == $uname) {
-			return $entry->summary;
-		}
+function readUserSummaries()
+{
+	$userlist = readUsers();
+	$retVal = array();
+	for($userlist as $user)
+	{
+		bio = new UserSummary()
+		bio->username=$res["username"];
+		bio->summary =$res["bio"];
+		array_push($retVal, bio);
 	}
-	return NULL;
-}
-
-function readUserSummaries() {
-	if (!file_exists("profiles.txt")) { setupDefaultSummary(); }
-	$contents = file_get_contents('profiles.txt');
-	$entries    = preg_split("/" . RANDOM_32_CHAR_KEY . "/", $contents, -1, PREG_SPLIT_NO_EMPTY);
-	$ret = array();
-	if (count($entries) % 2 != 0) {
-		echo "ERROR: entries should be of even length";
-	}
-	else {
-		for ($i = 0; $i < count($entries); $i += 2) {
-			$uSumm = new UserSummary();
-			$uSumm->username = $entries[$i];
-			$uSumm->summary = $entries[$i+1];
-			$ret[] = $uSumm;
-		}
-	}
-	return $ret;
+	return $retVal;
 }
 
 function writeUserSummaries($userSummaries) {
-	$fh = fopen('profiles.txt', 'w+') or die("Can't open file");
-	foreach ($userSummaries as $entry) {
-		fwrite($fh, RANDOM_32_CHAR_KEY . $entry->username . RANDOM_32_CHAR_KEY . "\n" . trim($entry->summary) . "\n");
+	$q = new Querries();
+	$db = $q->getDB();
+	for($userSummaries as $bio)
+	{
+		$array = $db->querry(sprintf($q->WRITE_USER_SUMMARY, $bio->summary, $bio->username));	
 	}
-	fclose($fh);
+	$db->close();
 }
 
 function setupDefaultSummary() {
@@ -193,40 +154,68 @@ function sanitize($input) {
 // return array of Users that $uname is friends with
 function getFriends($uname){
 	if($uname == 'guest') return array();
-	$u = getUser($uname);
-	$rawFriends = $u->friends;
-	if(empty($rawFriends)) return array();
-	$friendList = explode(",", $rawFriends);
-	$friends = array();
-	foreach($friendList as $fname){
-		if(!empty($fname)){
-			$u = getUser($fname);
-			$friends[$fname] = $u;
-		}
+
+	$q = new Querries();
+	$db = $q->getDB();
+	$array = $db->querry(sprintf($q->GET_USER_FRIENDS, $uname));
+	if(!($array instanceof Sqlite3Result))
+	{
+		return array();
 	}
+	$friends=array();
+	while($res = $array->fetchArray())
+	{
+		$user = getUser($res["friend"]);
+		array_push($friends,$user);
+	}
+	
+	$db->close();
 	return $friends;
+}
+
+// return array of Users that $uname has pending requests from
+function getRequestUsers($uname){
+	if($uname == 'guest') return array();
+
+	$q = new Querries();
+	$db = $q->getDB();
+	$array = $db->querry(sprintf($q->GET_PENDING_REQUESTS, $uname));
+	if(!($array instanceof Sqlite3Result))
+	{
+		return array();
+	}
+	$requests=array();
+	while($res = $array->fetchArray())
+	{
+		$user = getUser($res["user"]);
+		array_push($requests,$user);
+	}
+	
+	$db->close();
+	return $requests;
 }
 
 // returns true if user $u2 is on user $u1's friend list
 function isFriend($u1, $u2){
-	if($u1 == 'guest' || $u2 == 'guest') return FALSE;
-	$friends = getFriends($u1);
-	$testUser = getUser($u2);
-	return in_array($testUser, $friends);
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry(sprintf($q->IS_FRIEND, $u1, $u2));
+	if(!($res instanceof Sqlite3Result))
+	{
+		return array();
+	}
+	$friends=$res[0];
+	$db->close();
+	return $friends;
 }
 
 // return array of usernames that $uname has pending requests from
-function getRequests($uname){
+function getRequests($uname)
+{
 	if($uname == 'guest') return array();
-	$u = getUser($uname);
-	$rawRequests = $u->pending;
-	if(empty($rawRequests)) return array();
-	$requestList = explode(",", $rawRequests);
 	$requests = array();
-	foreach($requestList as $rname){
-		if(!empty($rname)){
-			$requests[$rname] = $rname;
-		}
+	foreach(getRequestUsers($uname) as $usr){
+		$requests[$usr->username]=$usr->username;
 	}
 	return $requests;
 }
