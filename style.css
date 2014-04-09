@@ -1,0 +1,183 @@
+form{
+margin-left:15px;
+}
+
+a{
+text-decoration: none;
+}
+
+h1 {
+margin:15px;
+text-align: center;
+color:green;
+vertical-align:center;
+}
+
+#header img{
+width:150px;
+height:150px;
+float:left;
+margin-left: 10px;
+margin-top: 5px;
+border-radius: 150px;
+-webkit-border-radius: 150px;
+-moz-border-radius: 150px;
+}
+
+h3 {
+margin-left:15px;
+}
+
+p {
+margin:1em;
+color:grey;
+}
+
+h2 {
+margin:0px;
+}
+
+html{
+min-height:530px;
+}
+
+body {
+padding:0px;
+margin:0px;
+width:100%;
+height:100%;
+font-family:Times;
+}
+
+
+img.thumbnails {
+width: 100px;
+height: 100px;
+margin-left: auto;
+margin-right:auto;
+display:block;
+}
+
+.user{
+width: 140px;
+height: 150px;
+text-align: center;
+float:left;
+overflow:auto;
+}
+
+img.prof_pic{
+width:300px;
+float: left;
+display: block;
+margin-left: 15px;
+margin-right:15px;
+margin-bottom:15px;
+border: solid 5px;
+}
+
+.wrapper {
+width:100%;
+height:70%;
+}
+
+.left{
+width:61%;
+margin:2%;
+background-color:lightblue;
+float: left;
+}
+
+.users{
+width:31%;
+margin:2%;
+padding-bottom:20px;
+background-color:lightgrey;
+float:left;
+overflow: auto;
+}
+
+#header {
+min-height:20px;
+background-color:lightcyan;
+height:20%;
+overflow:hidden;
+}
+
+#footer {
+background-color:lightcyan;
+text-align:center;
+height:10%;
+clear:both;
+color:grey;
+padding:1em;
+}
+
+#pageHead{
+text-align:center;
+padding:1em;
+color:grey;
+}
+
+
+.navitem{
+width:150px;
+padding-left:10px;
+padding-right:10px;
+padding-top:0.1em;
+padding-bottom:0.1em;
+text-align:center;
+background-color:whitesmoke;
+border:3px solid black;
+margin:10px;
+margin-top:-50px;
+font-weight:bold;
+font-size:16px;
+position: relative;
+top:-15px;
+
+
+}
+#navs {
+margin:15px;
+margin-bottom:0px;
+text-align:center;
+}
+
+#navs a:link {
+	color: blue;
+}
+
+#navs a:visited {
+	color: purple;
+}
+
+#navs a:hover {
+	color: cyan;
+}
+
+#navs a:active {
+	color: grey;
+}
+
+.warning {
+color:red;
+}
+
+#profile_info {
+overflow: auto;
+}
+
+p.error {
+color: red;
+}
+
+#friends {
+width: 100%;
+float:left;
+}
+
+img.smallpic {
+	width: 50px;
+	height:50px;
+}
