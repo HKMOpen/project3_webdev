@@ -258,7 +258,27 @@ function requestRegisterAuthentication($username, $email, $password, $ip) {
 function authenticateNewUser($username, $key, $ip) {
 	//checks that the given key and IP match the key and IP stored in the DB
 	//authenticates the user and notifies the admins for approval
+	//returns TRUE on success, else returns FALSE
 	
+}
+
+function approveNewUser($username) {
+	//this method is to be used after a user has been authenticated
+	//it changes their status in the database to approved and sends
+	//them an email saying they've been approved.
+	
+}
+
+function disapproveNewUser($username) {
+	//same as approveNewUser, except it disapproves them
+	
+}
+
+function getAllUsersToBeApproved() {
+	//this function will return an array of all authenticated usernames 
+	//in the DB which are waiting to be approved by an admin
+	
+	return array("rawlin", "brady", "peeeeeeeeeeeeeeeeeeeeters");
 }
 
 ?>

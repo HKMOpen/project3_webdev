@@ -161,6 +161,14 @@ if (isset($_POST['submitCommentFlag'])) {
 
 //END ADDING COMMENT TO WALL
 
+//BEGIN ADDING REPLY TO WALL
+
+if (isset($_POST['addReplyFlag'])) {
+	//TODO: implement functionality for adding a reply to a comment, DB insert
+}
+
+//END ADDING REPLY TO WALL
+
 $user = getUser($uname);
 $userSummary = getUserSummary($uname);
 if (is_null($userSummary)) { $userSummary = "";}
@@ -337,7 +345,7 @@ and replies within a "reply" div. -->
 	<div class="wallPost">
 		<p id="comment"><b>User1:</b> This is a wall post!</p>
 			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
-				<input type="submit" value="Reply" align="right"/>
+				<input type="submit" value="Reply" />
 				<input type="hidden" name="addReplyFlag" value="true"/>
 				<!-- NOTE: need some way to save the fact that the sender is
 				replying to a specific comment/reply... -->
@@ -345,7 +353,7 @@ and replies within a "reply" div. -->
 		
 		<p id="reply"><b>User 2:</b> Hey User1 what's up?</p>
 			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
-				<input type="submit" value="Reply" align="right"/>
+				<input type="submit" value="Reply" />
 				<input type="hidden" name="addReplyFlag" value="true"/>
 			</form>
 		
