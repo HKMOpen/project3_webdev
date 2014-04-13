@@ -32,7 +32,7 @@ function setupDefaultUsers() {
 function writeUsers($users) {
 	$q = new Querries();
 	$db = $q->getDB();
-	for($users as $user)
+	foreach($users as $user)
 	{
 		$db->querry(sprintf($q->CREATE_USER, $user->username, $user->passwd, $user->name, $user->gender, $user->phone, $user->mail, $user->admin, $user->pic, $user->bio));
 	}
@@ -53,8 +53,8 @@ function addPendingUser($user)
 function removePendingUsers($users)
 {
 	$q = new Querries();
-	$db = q->getDB();
-	for($users as $user)
+	$db = $q->getDB();
+	foreach($users as $user)
 	{
 		$db->querry(sprintf($q->REMOVE_PENDING_USER, $user->username));
 	}
@@ -89,7 +89,7 @@ function getUser($uname) {
 	{
 		return;
 	}
-	$res = $array->fetchArray()
+	$res = $array->fetchArray();
   	$user = makeNewUser($res["username"],$res["password"],$res["name"],$res["gender"],$res["phone"],$res["email"],$res["admin"],$res["pictureLocation"], null, null, $res["bio"]);
 	$db->close();
 	$user->friends = getFriends($uname);
@@ -106,18 +106,18 @@ function getPasswordHash($uname) {
 }
 
 function getUserSummary($username) {
-	getUser($username)->summary
+	return getUser($username)->summary;
 }
 
 function readUserSummaries()
 {
 	$userlist = readUsers();
 	$retVal = array();
-	for($userlist as $user)
+	foreach($userlist as $user)
 	{
-		bio = new UserSummary()
-		bio->username=$res["username"];
-		bio->summary =$res["bio"];
+		$bio = new UserSummary();
+		$bio->username=$res["username"];
+		$bio->summary =$res["bio"];
 		array_push($retVal, bio);
 	}
 	return $retVal;
@@ -126,7 +126,7 @@ function readUserSummaries()
 function writeUserSummaries($userSummaries) {
 	$q = new Querries();
 	$db = $q->getDB();
-	for($userSummaries as $bio)
+	foreach($userSummaries as $bio)
 	{
 		$array = $db->querry(sprintf($q->WRITE_USER_SUMMARY, $bio->summary, $bio->username));	
 	}
@@ -293,16 +293,16 @@ function saveUser($user)
 	$q = new Querries();
 	$db = $q->getDB();
 	$db->querry(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->username));
-	$db->querry(sprintf($q->REMOVE_ALL_FRIENDS, $user->username);
-	for($user->friends as $friend)
+	$db->querry(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
+	foreach($user->friends as $friend)
 	{
-		$db->querry(sprintf($q->ADD_FRIEND, $user->username, $friend);
+		$db->querry(sprintf($q->ADD_FRIEND, $user->username, $friend));
 	}
 
-	$db->querry(sprintf($q->REMOVE_ALL_PENDING, $user->username);
-	for($user->pending as $pending)
+	$db->querry(sprintf($q->REMOVE_ALL_PENDING, $user->username));
+	foreach($user->pending as $pending)
 	{
-		$db->querry(sprintf($q->ADD_REQUEST,$pending,$user->username);
+		$db->querry(sprintf($q->ADD_REQUEST,$pending,$user->username));
 	}
 
 	$db->close();
@@ -320,11 +320,11 @@ function getUsersWallPosts($user)
 		$tempDB = $q->getDB();
 		$replyRes = $tempDB->querry();
 	$db->querry(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
-		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], //TODO update this via another querry $repliedTo);
+		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], /*TODO update this via another querry*/ $repliedTo);
 		array_push($posts,$temp);
 	}
 	$db->close();
-	return $posts
+	return $posts;
 }
 
 function getPostsOnUserWall($user)
@@ -361,11 +361,6 @@ function changePassword($username, $newPassword) {
 	
 }
 
-function requestRegisterAuthentication($username, $email, $password, $ip) {
-	//similar to requestChangePassword...
-	//send authentication email to user
-	 
-}
 
 function authenticateNewUser($username, $key, $ip) {
 	//checks that the given key and IP match the key and IP stored in the DB
