@@ -1,10 +1,11 @@
 <?php
 include_once "Querries.php";
 include_once "User.php";
+include_once "post.php";
 
 define("RANDOM_32_CHAR_KEY", substr(md5("random"), 0, 31).'~');
 
-function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friendList=null, $pendingList=null, $bio) {
+function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friendList, $pendingList, $bio) {
 	$u = new User();
 	$u->username = $uname;
 	$u->passwd  = $pass;
@@ -49,6 +50,17 @@ function addPendingUser($user)
 	$db->close();
 }	
 
+function removePendingUsers($users)
+{
+	$q = new Querries();
+	$db = q->getDB();
+	for($users as $user)
+	{
+		$db->querry(sprintf($q->REMOVE_PENDING_USER, $user->username));
+	}
+	$db->close();
+}
+
 function readUsers() {
 	$q = new Querries();
 	$db = $q->getDB();
@@ -87,7 +99,7 @@ function getUser($uname) {
 }
 
 
-function getHash($uname) {
+function getPasswordHash($uname) {
 	
 	getUser($uname);
 	return getUser($uname)->passwd;
@@ -218,6 +230,116 @@ function getRequests($uname)
 		$requests[$usr->username]=$usr->username;
 	}
 	return $requests;
+}
+
+function getPendingSystemUsers()
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry($q->GET_PENDING_USERS);
+	if(!($res instanceof Sqlite3Result))
+	{
+		return array();
+	}
+	$unames = array();
+	while($res = $array->fetchArray())
+	{
+		$temp = getUser($res["username"]);
+		array_push($unames,$temp);
+	}
+	$db->close();
+	return $unames;
+}
+
+function getAuthenticatedPendingUsers()
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry($q->GET_AUTHENTICATED_PANDING);
+	if(!($res instanceof Sqlite3Result))
+	{
+		return array();
+	}
+	$unames = array();
+	while($res = $array->fetchArray())
+	{
+		$temp = getUser($res["username"]);
+		array_push($unames,$temp);
+	}
+	$db->close();
+	return $unames;
+}
+
+function authenticatePendingUser($uname)
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry(sprintf($q->AUTH_PENDING_USER, $uname));
+	$db->close();
+}
+//TODO this!!!!
+function adminAcceptPendingUser($uname)
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->querry(sprintf($q->REMOVE_PENDING_USER, $uname));
+	$db->close();
+	$this->makeNewUser($uname, $uname, $name, $sex, $number, $mail, $privileges, $picture, $friendList=null, $pendingList=null, $bio);
+	
+}
+
+function saveUser($user)
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->querry(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->username));
+	$db->querry(sprintf($q->REMOVE_ALL_FRIENDS, $user->username);
+	for($user->friends as $friend)
+	{
+		$db->querry(sprintf($q->ADD_FRIEND, $user->username, $friend);
+	}
+
+	$db->querry(sprintf($q->REMOVE_ALL_PENDING, $user->username);
+	for($user->pending as $pending)
+	{
+		$db->querry(sprintf($q->ADD_REQUEST,$pending,$user->username);
+	}
+
+	$db->close();
+	
+}
+
+function getUsersWallPosts($user)
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
+	$posts = array();
+	while($res = $array->fetchArray())
+	{
+		$tempDB = $q->getDB();
+		$replyRes = $tempDB->querry();
+	$db->querry(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
+		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], //TODO update this via another querry $repliedTo);
+		array_push($posts,$temp);
+	}
+	$db->close();
+	return $posts
+}
+
+function getPostsOnUserWall($user)
+{
+	//TODO: THIS
+}
+
+function savePost($post)
+{
+	//TODO: THIS
+}
+
+function requestRegisterAuthentication($username, $email, $password, $hash, $ipaddr)
+{
+	//TODO: THIS
 }
 
 // returns true if $requestor is on $requestee's pending list
