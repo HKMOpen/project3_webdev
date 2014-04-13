@@ -1,12 +1,4 @@
 <?php
-/*
- * TODO: write newly changed profile info or summary to file
- */
-
-?>
-
-
-<?php
 
 $pageTitle = 'User Profile';
 include 'header.php';

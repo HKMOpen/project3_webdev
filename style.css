@@ -11,6 +11,7 @@ margin:15px;
 text-align: center;
 color:green;
 vertical-align:center;
+text-shadow: 3px 1px 2px black;
 }
 
 #header img{
@@ -87,6 +88,8 @@ margin:2%;
 background-color:lightblue;
 float: left;
 overflow: auto;
+border-radius: 8px;
+box-shadow: 4px 4px 6px;
 }
 
 .users{
@@ -96,11 +99,13 @@ padding-bottom:20px;
 background-color:lightgrey;
 float:left;
 overflow: auto;
+border-radius: 8px;
+box-shadow: 4px 4px 6px;
 }
 
 #header {
 min-height:20px;
-background-color:lightcyan;
+background-color: lightcyan;
 height:20%;
 overflow:hidden;
 }
