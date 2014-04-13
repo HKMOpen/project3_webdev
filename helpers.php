@@ -39,15 +39,20 @@ function writeUsers($users) {
 	$db->close();
 }
 
-function addPendingUser($user)
+function addPendingUser($user, $ipaddress)
 {
 	$users = array();
 	$users[0]=$user;
 	writeUsers($user);
+
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->querry(sprintf($q->ADD_PENDING_USER, $user->username));
+	$hash = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.$user->username);
+	$db->querry(sprintf($q->ADD_PENDING_USER, $user->username, $hash, $ipaddress));
 	$db->close();
+	$emailAddress = $user->email;
+	$uname = $user->username;
+	mail($emailAddress,"User Accepted!","A user named $uname has registerd for colostatebook, please visit: https://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key to confirm you exist! If this email is in error please ignore it <3 ");
 }	
 
 function removePendingUsers($users)
@@ -242,7 +247,7 @@ function getPendingSystemUsers()
 		return array();
 	}
 	$unames = array();
-	while($res = $array->fetchArray())
+	while($res = $array[0])
 	{
 		$temp = getUser($res["username"]);
 		array_push($unames,$temp);
@@ -251,7 +256,42 @@ function getPendingSystemUsers()
 	return $unames;
 }
 
-function getAuthenticatedPendingUsers()
+function disapproveNewUser($username) {
+	//same as approveNewUser, except it disapproves them
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->querry(sprintf($q->REMOVE_PENDING_USER, $username));
+	$db->querry(sprintf($q->REMOVE_USER, $username));
+	mail($emailAddress,"Disapproved Message!","Saldy $username is not allowed to use colostatebook at this time :(");
+}
+
+function requestChangePassword($username, $email, $ip) {
+	//generate random key, store it in the DB, send authentication email
+	//to the user's email address, using link to chpasswd.php w/ key as a GET variable
+	//also store user's IP address in DB to make sure it matches when authenticating
+	$q = new Querries();
+	$db = $q->getDB();
+	$key = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
+	$db->querry(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
+	$emailAddress = $this->getUser($username)->email;
+	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key");
+	
+}
+
+function changePassword($username, $newPassword) {
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->querry(sprintf($q->CHANGE_PASSWORD, $username, $newPassword));
+	if(!($res instanceof Sqlite3Result))
+	{
+		return false;
+	}
+	$res = $db->querry(sprintf($q->REMOVE_CHANGE_REQUEST, $username));
+	$db->close();
+	return true;
+}
+
+function getAllUsersToBeApproved()
 {
 	$q = new Querries();
 	$db = $q->getDB();
@@ -270,22 +310,67 @@ function getAuthenticatedPendingUsers()
 	return $unames;
 }
 
+function authenticateNewUser($username, $key, $ip) {
+	//checks that the given key and IP match the key and IP stored in the DB
+	//authenticates the user and notifies the admins for approval
+	//returns TRUE on success, else returns FALSE
+
+	$q = new Querries();
+	$db = $q->getDB();
+	$array=$db->query(sprintf($q->AUTHENTICATE_NEW_USER, $key, $ip, $username));
+		
+		if(!($array instanceof Sqlite3Result))
+		{	
+			return FALSE;
+		}
+		if(!$array)
+		{	
+			return FALSE;
+		}
+		$ctr=0;
+		while($res=$array->fetchArray())
+		{
+			$ctr+=1;
+			
+		}	
+		if($ctr!=1)
+		{
+			
+			return false;
+		}
+	return $this->authenticatePendingUser($username)
+	
+}
+
 function authenticatePendingUser($uname)
 {
 	$q = new Querries();
 	$db = $q->getDB();
 	$res = $db->querry(sprintf($q->AUTH_PENDING_USER, $uname));
+	if(!($res instanceof Sqlite3Result))
+	{	
+			return FALSE;
+	}
 	$db->close();
+	return true;
 }
-//TODO this!!!!
-function adminAcceptPendingUser($uname)
+
+function approveNewUser($uname)
 {
+	//this method is to be used after a user has been authenticated
+	//it changes their status in the database to approved and sends
+	//them an email saying they've been approved.
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->querry(sprintf($q->REMOVE_PENDING_USER, $uname));
+	$res = $db->querry(sprintf($q->REMOVE_PENDING_USER, $uname));
+	if(!($res instanceof Sqlite3Result))
+	{	
+			return FALSE;
+	}
 	$db->close();
-	$this->makeNewUser($uname, $uname, $name, $sex, $number, $mail, $privileges, $picture, $friendList=null, $pendingList=null, $bio);
-	
+	$emailAddress = $this->getUser($uname)->email;
+	mail($emailAddress,"User Accepted!","A user named $uname has been approved by the admins addition to the colostatebook family!");
+	return true;
 }
 
 function saveUser($user)
@@ -349,44 +434,6 @@ function isPending($requestor, $requestee){
 }
 
 
-function requestChangePassword($username, $email, $ip) {
-	//generate random key, store it in the DB, send authentication email
-	//to the user's email address, using link to chpasswd.php w/ key as a GET variable
-	//also store user's IP address in DB to make sure it matches when authenticating
-	
-}
-
-function changePassword($username, $newPassword) {
-	//change the user's password in the database to the new password
-	
-}
-
-
-function authenticateNewUser($username, $key, $ip) {
-	//checks that the given key and IP match the key and IP stored in the DB
-	//authenticates the user and notifies the admins for approval
-	//returns TRUE on success, else returns FALSE
-	
-}
-
-function approveNewUser($username) {
-	//this method is to be used after a user has been authenticated
-	//it changes their status in the database to approved and sends
-	//them an email saying they've been approved.
-	
-}
-
-function disapproveNewUser($username) {
-	//same as approveNewUser, except it disapproves them
-	
-}
-
-function getAllUsersToBeApproved() {
-	//this function will return an array of all authenticated usernames 
-	//in the DB which are waiting to be approved by an admin
-	
-	return array("rawlin", "brady", "peeeeeeeeeeeeeeeeeeeeters");
-}
 
 ?>
 
