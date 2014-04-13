@@ -13,7 +13,7 @@ class Querries
 	public $WRITE_USER_SUMMARY="Update users set bio='%s' where username='%s';";
 	public $GET_USER_FRIENDS="Select friend from friends where user='%s'";
 	
-	public $IS_FRIEND="SELECT CASE WHEN EXISTS (SELECT * FROM friends WHERE user=%s and friend=%s) THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END;";
+	public $IS_FRIEND="SELECT CASE WHEN EXISTS (SELECT * FROM friends WHERE user='%s' and friend='%s') THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END;";
 	
 	public $GET_PENDING_REQUESTS="Select user from friendRequests where requestedFriend='%s';";
 	
@@ -39,7 +39,17 @@ class Querries
 
 	public $ADD_REQUEST = "insert into friendRequests values '%s','%s'";
 	
-	public $GET_REPLIES ="select * from communications where id in (select repliedTo from commentReplies where replyId='%s');";
+	public $GET_REPLIES = "select * from communications where id in (select repliedTo from commentReplies where replyId='%s');";
+
+	public $AUTHENTICATE_NEW_USER = "Select * from users where hash='%s' and ipaddress='%s' and username='%s';";	
+	
+	public $CHANGE_PASSWORD = "update users set password='%s' where username='%s';");
+
+	public $REMOVE_CHANGE_REQUEST = "delete from passwordChange where username='%s';");
+
+	public $ADD_CHANGE_REQUEST="insert into passwordChange values '%s','%s','%s'";
+
+	public $REMOVE_USER = "delete from users where username='%s';";
 
 	function getDB()
 	{
