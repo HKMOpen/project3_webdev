@@ -10,16 +10,17 @@ if(!empty($decision) && !empty($uname)){
 	foreach($users as $user){
 		if($user->username == $_SESSION['username']){
 			if($decision == "accept"){
-				$user->friends .= $uname.',';
+				$user->friends[] = $uname;
 				$message = "You and $uname are now friends! Enjoy your online friendship.";
 			}
 			else $message = "Declined $uname's friend request.";
 			//remove $uname from pending list
-			$user->pending = str_replace("$uname,", '', $user->pending);
+			$tempArray = array("$uname");
+			$user->pending = array_diff($user->pending, $tempArray);
 		}
 		else if($user->username == $uname){
 			if($decision == "accept"){
-				$user->friends .= $_SESSION['username'].',';
+				$user->friends[] = $_SESSION['username'];
 			}
 		}
 	}

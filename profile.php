@@ -43,7 +43,7 @@ if (isset($_POST['addFriendFlag'])) {
 	
 	foreach($allUsers as $user) {
 		if ($user->username == $requestedUser) {
-			$user->pending .= $signedInUser . ',';
+			$user->pending[] = $signedInUser;
 			break;
 		}
 	}
@@ -212,12 +212,6 @@ if (isset($_POST['editPasswordFlag'])) {
 
 <img class="prof_pic" src="<?php echo $user->pic; ?>" alt="Photo of <?php echo $user->name?>" />
 <?php if (!empty($error)) { echo "<p class=\"error\">" . $error . "</p>";}?>
-
-<?php
-/*
- * The following code is for uploading a new profile picture. TODO: once the user uploads a new picture, handle it
- */
-?>
 
 <?php if (isset ( $_POST ['editPicFlag'] )) { ?>
 	<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>" enctype="multipart/form-data">
