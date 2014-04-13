@@ -2,99 +2,68 @@
 $pageTitle='Admin Page';
 include 'header.php';
 include 'nav.php';
+?>
 
-$username = "";
-$passwd = "";
-$error = "";
-$admin = "0"; // 0 = no admin privileges, 1 = admin
+<?php 
+$approvedMessage = "";
+//handle user approval and disapproval form submissions
 
-//TODO restrictions on username
-
-if ($_SERVER["REQUEST_METHOD"]=="POST"){
-	$raw = "";
-	if(isset($_POST["uname"])){
-		$username = strip_tags($_POST["uname"]);
-		$username = str_replace(',', '', $username);
-		if(isset($_POST["pass"])){
-			if(!empty($_POST["pass"])){
-				$raw = $_POST["pass"];
-				$passwd = saltedHash($raw, $username);
-			}
-		}
-	}
-	if(isset($_POST["admin"])) $admin = $_POST["admin"];
-	
-	if(strlen($raw) > 16){
-		$passwd = "";
-		$error = "Password can not be longer than 16 characters.";
-	}
-	else if(empty($username) || empty($passwd)) $error = "Could not create new user. Please complete all fields before submitting.";
-	else{
-		// Create New User
-		$users = readUsers();
-		foreach($users as $user){
-			if($user->username == $username){
-				$error = "User $username already exists! Failed to create new user.";
-				break;
-			}
-		}
-		if(empty($error)){
-			$u = makeNewUser($username, $passwd, "", "", "", "", $admin, "images/default.jpg","", "");
-			$users[count($users)] = $u;
-			writeUsers($users);
-			
-			//write default summary to file
-			$userSummaries = readUserSummaries();
-			$uSumm = new UserSummary();
-			$uSumm->username = $username;
-			$uSumm->summary = "Edit summary and interests here.";
-			$userSummaries[] = $uSumm;
-			writeUserSummaries($userSummaries);
-		}
-	}
-	
+//APPROVAL
+if (isset($_POST['approveUserFlag'])) {
+	$username = $_POST['username'];
+	approveNewUser($username);
+	$approvedMessage = "$username has been approved.";
 }
 
-
+//DISAPPROVAL
+if (isset($_POST['disapproveUserFlag'])) {
+	$username = $_POST['username'];
+	disapproveNewUser($username);
+	$approvedMessage = "$username has been disapproved.";
+}
 
 ?>
 
 <div class="wrapper">
 	<div class="left"> 
-		<h3>Create New User</h3>
+		<h3>Approve New Users</h3>
+
 		<?php
-		 if($_SESSION['username'] != 'guest' && getUser($_SESSION['username'])->admin == "1"){ ?>
-		<form method="post" action="admin.php">
-			<table>
-				<tr>
-					<td><label>User Name:</label></td>
-					<td><input type="text" name="uname" value=<?php echo '"'.$username.'"' ?> /></td>
-				</tr>
-				<tr>
-					<td><label>Password:</label></td>
-					<td><input type="password" name="pass"/></td>
-				</tr>
-				<tr>
-					<td><label>Admin?</label></td>
-					<td><input type="radio" name="admin" value="1"/>Yes</td>
-				</tr>
-				<tr>
-				<td></td>
-				<td><input type="radio" name="admin" checked="checked" value="0"/>No</td>
-				</tr>
-				<tr>
-					<td><input type="submit" value="Create User"/></td>
-				</tr>
-				
-			</table>
-		</form>
-		<?php 
-		//echo "<p>$username $passwd $admin</p>";
-		if(!empty($error)){
-			echo "<p>$error</p>";
+		if($_SESSION['username'] != 'guest' && getUser($_SESSION['username'])->admin == "1"){ 
+
+		if (!empty($approvedMessage)) {
+			echo "<p>$approvedMessage</p>";
 		}
+		
+		$unapprovedUsers = getAllUsersToBeApproved();
+		echo "<table id=\"approveUsers\">";
+		foreach ($unapprovedUsers as $userToApprove) { ?>
+			
+			<tr>
+				<td><?php echo $userToApprove; ?></td>
+				<td>
+					<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+						<input type="submit" value="Approve"/>
+						<input type="hidden" name="username" value="<?php echo $userToApprove; ?>" />
+						<input type="hidden" name="approveUserFlag" value="true" />
+					</form>
+				</td>
+				<td>
+					<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+						<input type="submit" value="Disapprove"/>
+						<input type="hidden" name="username" value="<?php echo $userToApprove; ?>" />
+						<input type="hidden" name="disapproveUserFlag" value="true" />
+					</form>
+				</td>
+			</tr>
+			
+		<?php
 		}
-		else echo "<p>You do not have the admin rights required to view this page. Shame on you.</p>";
+		echo "</table>";
+		
+		?>
+		<?php
+		} else echo "<p>You do not have the admin rights required to view this page. Shame on you.</p>";
 		?>
 	</div>
 	<?php include 'userList.php'; ?>
