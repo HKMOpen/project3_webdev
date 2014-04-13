@@ -8,7 +8,7 @@ class Post
 	public $message;
 	public $repliedTo;
 
-	public Post($messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
+	function Post($messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
 	{
 		$this->messageType = $messageType;
  		$this->sender=$sender;
@@ -17,5 +17,5 @@ class Post
 		$this->message=$message; 
 		$this->repliedTo=$repliedTo;
 	}
-
+}
 ?>

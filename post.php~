@@ -1,5 +1,5 @@
 <?php
-class post
+class Post
 {
 	public $messageType;
 	public $sender;
@@ -8,7 +8,7 @@ class post
 	public $message;
 	public $repliedTo;
 
-	public post($messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
+	function Post($messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
 	{
 		$this->messageType = $messageType;
  		$this->sender=$sender;
