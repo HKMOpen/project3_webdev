@@ -69,7 +69,7 @@ function addPendingUser($user, $ipaddress)
 	$db->close();
 	$emailAddress = $user->email;
 	$uname = $user->username;
-	mail($emailAddress,"User Request!","A user named $uname has registerd for colostatebook, please visit: https://www.cs.colostate.edu/~cmillard/project3/authenticate.php?username=$uname&key=$hash to confirm you exist! If this email is in error please ignore it <3 ");
+	mail($emailAddress,"User Request!","A user named $uname has registerd for colostatebook, please visit: https://www.cs.colostate.edu/~rbpeters/project3/authenticate.php?user=$uname&key=$hash to confirm you exist! If this email is in error please ignore it <3 ");
 }	
 
 function removePendingUsers($users)
@@ -320,9 +320,9 @@ function getAllUsersToBeApproved()
 		return array();
 	}
 	$unames = array();
-	while($res = $array->fetchArray())
+	while($res1 = $res->fetchArray())
 	{
-		$temp = getUser($res["username"]);
+		$temp = getUser($res1["username"]);
 		array_push($unames,$temp);
 	}
 	$db->close();
