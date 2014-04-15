@@ -459,7 +459,7 @@ function requestRegisterAuthentication($username, $email, $password, $hash, $ipa
 {
 	$user = new User();
 	$user->username=$username;
-	$user->passwd = md5($password);
+	$user->passwd = saltedHash($password,$username);
 	$user->name = $email;
 	$user->gender="Unknown";
 	$user->phone="XXX-XXX-XXXX";
