@@ -59,7 +59,7 @@ function addPendingUser($user, $ipaddress)
 {
 	$users = array();
 	$users[0]=$user;
-	writeUsers($users);
+	writeNewUsers($users);
 
 	$q = new Querries();
 	$db = $q->getDB();
@@ -117,7 +117,7 @@ function getUser($uname) {
 	$db->close();
 	$user->friends = getFriends($uname);
 	$user->pending = getRequests($uname);
-
+	
 	return $user;
 }
 
@@ -319,7 +319,7 @@ function getAllUsersToBeApproved()
 		return array();
 	}
 	$unames = array();
-	while($res1 = $res->fetchArray())
+	while($res1 = $array->fetchArray())
 	{
 		$temp = getUser($res1["username"]);
 		array_push($unames,$temp);
@@ -491,7 +491,7 @@ function requestRegisterAuthentication($username, $email, $password, $ipaddr)
 	$user->phone="XXX-XXX-XXXX";
 	$user->email=$email;
 	$user->admin="0";
-	$user->pic="./images/default.png";
+	$user->pic="./images/default.jpg";
 	$user->bio="Tell us something about yourself!";
 	addPendingUser($user,$ipaddr);
 }

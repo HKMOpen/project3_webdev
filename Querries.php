@@ -29,9 +29,9 @@ class Querries
 	
 	public $AUTH_PENDING_USER="UPDATE pendingUsers set authenticated='TRUE' where username='%s';";
 	
-	public $REMOVE_PENDING_USER="remove from pendingUsers where username='%s';";
+	public $REMOVE_PENDING_USER="DELETE from pendingUsers where username='%s';";
 	
-	public $REMOVE_FRIEND_REQUEST="remove from friend requests where user='%s';";
+	public $REMOVE_FRIEND_REQUEST="DELETE from friendRequests where user='%s';";
 	
 	public $ADD_FRIEND = "insert into friends values ('%s','%s');";
 	

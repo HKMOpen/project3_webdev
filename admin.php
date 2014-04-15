@@ -36,7 +36,7 @@ if (isset($_POST['disapproveUserFlag'])) {
 		}
 		
 		$unapprovedUsers = getAllUsersToBeApproved();
-		print_r($unapprovedUsers);
+		
 		echo "<table id=\"approveUsers\">";
 		foreach ($unapprovedUsers as $userToApprove) { ?>
 			
