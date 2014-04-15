@@ -319,9 +319,9 @@ function getAllUsersToBeApproved()
 		return array();
 	}
 	$unames = array();
-	while($res = $array->fetchArray())
+	while($res1 = $res->fetchArray())
 	{
-		$temp = getUser($res["username"]);
+		$temp = getUser($res1["username"]);
 		array_push($unames,$temp);
 	}
 	$db->close();
