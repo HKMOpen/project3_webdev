@@ -23,7 +23,7 @@ function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $p
 
 function setupDefaultUsers() {
 	$users = array();
-	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");	
+	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");
 	$users[1] = makeNewUser("rawlin", saltedHash("rawlin", "rawlin"), "Rawlin", "Male", "5555555555", "blah@gmail.com", "1", "images/rawlin.jpg", "","","");
 	$users[2] = makeNewUser("prady", saltedHash("prady", "prady"), "Prady", "Male", "1111111111", "prady@mail.com", "1", "images/prady.jpg", "","","");
 
@@ -36,7 +36,7 @@ function writeNewUsers($users)
 	$db = $q->getDB();
 	foreach($users as $user)
 	{
-		$db->query(sprintf($q->CREATE_USER, $user->username, $user->passwd, $user->name,$user->gender,$user->phone,$user->email,$user->admin,$user->pic,$user->bio));
+		$db->query(sprintf($q->CREATE_USER, $user->username, $user->password, $user->name,$user->gender,$user->phone,$user->email,$user->admin,$user->pic,$user->bio));
 	}
 	$db->close();
 }
@@ -46,6 +46,10 @@ function writeUsers($users) {
 	$db = $q->getDB();
 	foreach($users as $user)
 	{
+		if(!($user instanceof User))
+		{
+			echo "<h1>complain loudly</h1>";
+		}
 		saveUser($user);
 	}
 	$db->close();
@@ -55,7 +59,7 @@ function addPendingUser($user, $ipaddress)
 {
 	$users = array();
 	$users[0]=$user;
-	writeUsers($user);
+	writeUsers($users);
 
 	$q = new Querries();
 	$db = $q->getDB();
@@ -309,13 +313,13 @@ function getAllUsersToBeApproved()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res1 = $db->query($q->GET_AUTHENTICATED_PANDING);
-	if(!($res1 instanceof Sqlite3Result))
+	$res = $db->query($q->GET_AUTHENTICATED_PANDING);
+	if(!($res instanceof Sqlite3Result))
 	{
 		return array();
 	}
 	$unames = array();
-	while($res = $res1->fetchArray())
+	while($res = $array->fetchArray())
 	{
 		$temp = getUser($res["username"]);
 		array_push($unames,$temp);
@@ -391,13 +395,18 @@ function saveUser($user)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->query(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->bio, $user->username));
-	$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
-	foreach($user->friends as $friend)
+	if(!($user instanceof User))
 	{
-		$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
+		echo "THROW ALL THE F($%ING ERRORS";
+		return;
 	}
-
+	
+	$db->query(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->bio, $user->username));
+		$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
+		foreach($user->friends as $friend)
+		{
+			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
+		}
 	$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
 	foreach($user->pending as $pending)
 	{
