@@ -289,6 +289,7 @@ function requestChangePassword($username, $email, $ip) {
 	//also store user's IP address in DB to make sure it matches when authenticating
 	$q = new Querries();
 	$db = $q->getDB();
+	$user = getUser($username);
 	$key = md5($user->passwd.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
 	$db->query(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
 	$emailAddress = getUser($username)->email;
