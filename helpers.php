@@ -275,7 +275,7 @@ function requestChangePassword($username, $email, $ip) {
 	$db = $q->getDB();
 	$key = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
 	$db->querry(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
-	$emailAddress = $this->getUser($username)->email;
+	$emailAddress = getUser($username)->email;
 	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key");
 	
 }
@@ -340,7 +340,7 @@ function authenticateNewUser($username, $key, $ip) {
 			
 			return false;
 		}
-	return $this->authenticatePendingUser($username);
+	return authenticatePendingUser($username);
 	
 }
 
@@ -370,7 +370,7 @@ function approveNewUser($uname)
 			return FALSE;
 	}
 	$db->close();
-	$emailAddress = $this->getUser($uname)->email;
+	$emailAddress = getUser($uname)->email;
 	mail($emailAddress,"User Accepted!","A user named $uname has been approved by the admins addition to the colostatebook family!");
 	return true;
 }
@@ -406,8 +406,8 @@ function getUsersWallPosts($user)
 	{
 		$tempDB = $q->getDB();
 		$replyRes = $tempDB->query();
-	$db->query(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
-		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], /*TODO update this via another query*/ $repliedTo);
+		$res2=$db->query(sprintf($q->GET_POST_REPLY, $res["id"]));
+		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"],  $res2["repliedTo"]);
 		array_push($posts,$temp);
 	}
 	$db->close();
@@ -416,17 +416,58 @@ function getUsersWallPosts($user)
 
 function getPostsOnUserWall($user)
 {
-	//TODO: THIS
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->query(sprintf($q->GET_COMMENTS_ON_USER_WALL, $user->username));
+	$posts = array();
+	while($res = $array->fetchArray())
+	{
+		$tempDB = $q->getDB();
+		$replyRes = $tempDB->query();
+		$res2 = $db->query(sprintf($q->GET_POST_REPLY, $res["id"]));
+		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], $res2["repliedTo"]);
+		array_push($posts,$temp);
+	}
+	$db->close();
+	return $posts;
 }
 
 function savePost($post)
 {
-	//TODO: THIS
+	$q = new Querries();
+	$db = $q->getDB();
+	$messageType;
+	if(count($repliedTo)==0)
+	{
+		$messageType="NEW";
+	}
+	else
+	{
+		$messageType="RESPONSE";
+	}
+	$res = $db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
+	$db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
+	if($messageType=="RESPONSE")
+	{
+		$db->query(sprintf($q->SAVE_POST_REPLY, $post->sender,$post->timeStamp,$post->repliedTo));
+	}
+
+	$db->close();
 }
 
 function requestRegisterAuthentication($username, $email, $password, $hash, $ipaddr)
 {
-	//TODO: THIS
+	$user = new User();
+	$user->username=$username;
+	$user->passwd = md5($password);
+	$user->name = $email;
+	$user->gender="Unknown";
+	$user->phone="XXX-XXX-XXXX";
+	$user->email=$email;
+	$user->admin="false";
+	$user->pic="./images/default.png";
+	$user->bio="Tell us something about yourself!";
+	addPendingUser($user);
 }
 
 // returns true if $requestor is on $requestee's pending list
