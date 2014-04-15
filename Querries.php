@@ -23,7 +23,7 @@ class Querries
 	
 	public $GET_AUTHENTICATED_PANDING="select username from pendingUsers where authenticated='TRUE';";
 	
-	public $ADD_PENDING_USER="INSERT INTO pendingUsers values '%s','%s','%s','%s';";
+	public $ADD_PENDING_USER="INSERT INTO pendingUsers values ('%s','%s','%s','%s');";
 	
 	public $AUTH_PENDING_USER="UPDATE pendingUsers set authenticated='TRUE' where username='%s';";
 	
@@ -31,15 +31,17 @@ class Querries
 	
 	public $REMOVE_FRIEND_REQUEST="remove from friend requests where user='%s';";
 	
-	public $ADD_FRIEND = "insert into friends values '%s','%s';";
+	public $ADD_FRIEND = "insert into friends values ('%s','%s');";
 	
-	public $REMOVE_ALL_FRIENDS ="REMOVE from friends where user='%s';";
+	public $REMOVE_ALL_FRIENDS ="DELETE from friends where user='%s';";
 	
-	public $REMOVE_ALL_PENDING ="REMOVE from friendRequests where requestedFriend='%s';";
+	public $REMOVE_ALL_PENDING ="DELETE from friendRequests where requestedFriend='%s';";
 
-	public $ADD_REQUEST = "insert into friendRequests values '%s','%s'";
+	public $ADD_REQUEST = "insert into friendRequests values ('%s','%s');";
 	
 	public $GET_REPLIES = "select * from communications where id in (select repliedTo from commentReplies where replyId='%s');";
+	
+	public $CREATE_DATABASE = "CREATE TABLE users (username varchar(255) unique primary key, password varchar(255), name varchar(255), gender varchar(6), phone varchar(20), email varchar(255), admin boolean, pictureLocation varchar(255) , bio varchar(255));CREATE TABLE friends (user varchar(255), friend varchar(255), FOREIGN KEY (user) references users(username), FOREIGN KEY (friend) REFERENCES users(username) );CREATE TABLE friendRequests (user varchar(255), requestedFriend varchar(255), FOREIGN KEY (user) references users(username), FOREIGN KEY (requestedFriend) REFERENCES users(username) );CREATE TABLE communications (id int primary key, messageType varchar(8), sender varchar(255), reciever varchar(255), time timestamp, message varchar(500), FOREIGN KEY (sender) references users(username), FOREIGN key (reciever) references users(username));CREATE TABLE commentReplies (id int primary key, replyId int, repliedTo int, FOREIGN KEY (replyId) references communications(id), FOREIGN KEY (repliedTo) references communication(id));CREATE TABLE pendingUsers (username nvarchar(255), hash varchar(32), ipaddress varchar(50), authenticated varchar(5), FOREIGN KEY (username) REFERENCES users(username));CREATE TABLE passwordChange (username varchar(255), hash varchar(32), ipaddress varchar(50), FOREIGN KEY (username) REFERENCES user(username));";
 
 	public $AUTHENTICATE_NEW_USER = "Select * from users where hash='%s' and ipaddress='%s' and username='%s';";	
 	

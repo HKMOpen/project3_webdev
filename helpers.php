@@ -5,7 +5,7 @@ include_once "post.php";
 
 define("RANDOM_32_CHAR_KEY", substr(md5("random"), 0, 31).'~');
 
-function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friendList, $pendingList, $bio) {
+function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $picture, $friends, $pending, $bio) {
 	$u = new User();
 	$u->username = $uname;
 	$u->passwd  = $pass;
@@ -15,17 +15,17 @@ function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $p
 	$u->email  = $mail;
 	$u->admin  = $privileges;
 	$u->pic = $picture;
-	$u->friends  = $friendList;
-	$u->pending  = $pendingList;
+	$u->friends = $friends;
+	$u->pending = $pending;
 	$u->bio = $bio;
 	return $u;
 }
 
 function setupDefaultUsers() {
 	$users = array();
-	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "", "");
-	$users[1] = makeNewUser("rawlin", saltedHash("rawlin", "rawlin"), "Rawlin", "Male", "5555555555", "blah@gmail.com", "1", "images/rawlin.jpg", "", "");
-	$users[2] = makeNewUser("prady", saltedHash("prady", "prady"), "Prady", "Male", "1111111111", "prady@mail.com", "1", "images/prady.jpg", "", "");
+	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");
+	$users[1] = makeNewUser("rawlin", saltedHash("rawlin", "rawlin"), "Rawlin", "Male", "5555555555", "blah@gmail.com", "1", "images/rawlin.jpg", "","","");
+	$users[2] = makeNewUser("prady", saltedHash("prady", "prady"), "Prady", "Male", "1111111111", "prady@mail.com", "1", "images/prady.jpg", "","","");
 	writeUsers($users);
 }
 
@@ -34,7 +34,7 @@ function writeUsers($users) {
 	$db = $q->getDB();
 	foreach($users as $user)
 	{
-		$db->querry(sprintf($q->CREATE_USER, $user->username, $user->passwd, $user->name, $user->gender, $user->phone, $user->mail, $user->admin, $user->pic, $user->bio));
+		saveUser($user);
 	}
 	$db->close();
 }
@@ -47,8 +47,9 @@ function addPendingUser($user, $ipaddress)
 
 	$q = new Querries();
 	$db = $q->getDB();
+
 	$hash = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.$user->username);
-	$db->querry(sprintf($q->ADD_PENDING_USER, $user->username, $hash, $ipaddress));
+	$db->query(sprintf($q->ADD_PENDING_USER, $user->username, $hash, $ipaddress));
 	$db->close();
 	$emailAddress = $user->email;
 	$uname = $user->username;
@@ -61,15 +62,16 @@ function removePendingUsers($users)
 	$db = $q->getDB();
 	foreach($users as $user)
 	{
-		$db->querry(sprintf($q->REMOVE_PENDING_USER, $user->username));
+		$db->query(sprintf($q->REMOVE_PENDING_USER, $user->username));
 	}
 	$db->close();
 }
 
 function readUsers() {
+	if (!file_exists("project3.db")) createInitialDatabse();
 	$q = new Querries();
 	$db = $q->getDB();
-	$array = $db->querry($q->GET_ALL_USER_NAMES);
+	$array = $db->query($q->GET_ALL_USER_NAMES);
 	$retVal=array();
 	if(!($array instanceof Sqlite3Result))
 	{
@@ -89,7 +91,7 @@ function readUsers() {
 function getUser($uname) {
 	$q = new Querries();
 	$db = $q->getDB();
-	$array = $db->querry(sprintf($q->GET_USER, $uname));
+	$array = $db->query(sprintf($q->GET_USER, $uname));
 	if(!($array instanceof Sqlite3Result))
 	{
 		return;
@@ -98,7 +100,7 @@ function getUser($uname) {
   	$user = makeNewUser($res["username"],$res["password"],$res["name"],$res["gender"],$res["phone"],$res["email"],$res["admin"],$res["pictureLocation"], null, null, $res["bio"]);
 	$db->close();
 	$user->friends = getFriends($uname);
-	$user->pending = getRequestUsers($uname);
+	$user->pending = getRequests($uname);
 
 	return $user;
 }
@@ -111,7 +113,7 @@ function getPasswordHash($uname) {
 }
 
 function getUserSummary($username) {
-	return getUser($username)->summary;
+	return getUser($username)->bio;
 }
 
 function readUserSummaries()
@@ -121,9 +123,9 @@ function readUserSummaries()
 	foreach($userlist as $user)
 	{
 		$bio = new UserSummary();
-		$bio->username=$res["username"];
-		$bio->summary =$res["bio"];
-		array_push($retVal, bio);
+		$bio->username=$user->username;
+		$bio->bio =$user->bio;
+		array_push($retVal, $bio);
 	}
 	return $retVal;
 }
@@ -133,7 +135,7 @@ function writeUserSummaries($userSummaries) {
 	$db = $q->getDB();
 	foreach($userSummaries as $bio)
 	{
-		$array = $db->querry(sprintf($q->WRITE_USER_SUMMARY, $bio->summary, $bio->username));	
+		$array = $db->query(sprintf($q->WRITE_USER_SUMMARY, $bio->summary, $bio->username));	
 	}
 	$db->close();
 }
@@ -174,7 +176,7 @@ function getFriends($uname){
 
 	$q = new Querries();
 	$db = $q->getDB();
-	$array = $db->querry(sprintf($q->GET_USER_FRIENDS, $uname));
+	$array = $db->query(sprintf($q->GET_USER_FRIENDS, $uname));
 	if(!($array instanceof Sqlite3Result))
 	{
 		return array();
@@ -196,7 +198,7 @@ function getRequestUsers($uname){
 
 	$q = new Querries();
 	$db = $q->getDB();
-	$array = $db->querry(sprintf($q->GET_PENDING_REQUESTS, $uname));
+	$array = $db->query(sprintf($q->GET_PENDING_REQUESTS, $uname));
 	if(!($array instanceof Sqlite3Result))
 	{
 		return array();
@@ -216,14 +218,14 @@ function getRequestUsers($uname){
 function isFriend($u1, $u2){
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry(sprintf($q->IS_FRIEND, $u1, $u2));
+	$res = $db->query(sprintf($q->IS_FRIEND, $u1, $u2));
 	if(!($res instanceof Sqlite3Result))
 	{
 		return array();
 	}
-	$friends=$res[0];
+	$friendsArray = $res->fetchArray();
 	$db->close();
-	return $friends;
+	return $friendsArray[0];
 }
 
 // return array of usernames that $uname has pending requests from
@@ -241,7 +243,7 @@ function getPendingSystemUsers()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry($q->GET_PENDING_USERS);
+	$res = $db->query($q->GET_PENDING_USERS);
 	if(!($res instanceof Sqlite3Result))
 	{
 		return array();
@@ -295,7 +297,7 @@ function getAllUsersToBeApproved()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry($q->GET_AUTHENTICATED_PANDING);
+	$res = $db->query($q->GET_AUTHENTICATED_PANDING);
 	if(!($res instanceof Sqlite3Result))
 	{
 		return array();
@@ -338,7 +340,7 @@ function authenticateNewUser($username, $key, $ip) {
 			
 			return false;
 		}
-	return $this->authenticatePendingUser($username)
+	return $this->authenticatePendingUser($username);
 	
 }
 
@@ -346,7 +348,7 @@ function authenticatePendingUser($uname)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry(sprintf($q->AUTH_PENDING_USER, $uname));
+	$res = $db->query(sprintf($q->AUTH_PENDING_USER, $uname));
 	if(!($res instanceof Sqlite3Result))
 	{	
 			return FALSE;
@@ -362,7 +364,7 @@ function approveNewUser($uname)
 	//them an email saying they've been approved.
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry(sprintf($q->REMOVE_PENDING_USER, $uname));
+	$res = $db->query(sprintf($q->REMOVE_PENDING_USER, $uname));
 	if(!($res instanceof Sqlite3Result))
 	{	
 			return FALSE;
@@ -377,17 +379,17 @@ function saveUser($user)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->querry(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->username));
-	$db->querry(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
+	$db->query(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->bio, $user->username));
+	$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
 	foreach($user->friends as $friend)
 	{
-		$db->querry(sprintf($q->ADD_FRIEND, $user->username, $friend));
+		$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
 	}
 
-	$db->querry(sprintf($q->REMOVE_ALL_PENDING, $user->username));
+	$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
 	foreach($user->pending as $pending)
 	{
-		$db->querry(sprintf($q->ADD_REQUEST,$pending,$user->username));
+		$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
 	}
 
 	$db->close();
@@ -398,14 +400,14 @@ function getUsersWallPosts($user)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
+	$res = $db->query(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
 	$posts = array();
 	while($res = $array->fetchArray())
 	{
 		$tempDB = $q->getDB();
-		$replyRes = $tempDB->querry();
-	$db->querry(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
-		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], /*TODO update this via another querry*/ $repliedTo);
+		$replyRes = $tempDB->query();
+	$db->query(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
+		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], /*TODO update this via another query*/ $repliedTo);
 		array_push($posts,$temp);
 	}
 	$db->close();
@@ -434,6 +436,14 @@ function isPending($requestor, $requestee){
 }
 
 
+
+function createInitialDatabse() {
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->query($q->CREATE_DATABASE);
+	$db->close();
+	setupDefaultUsers();
+}
 
 ?>
 
