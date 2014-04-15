@@ -36,15 +36,16 @@ if (isset($_POST['disapproveUserFlag'])) {
 		}
 		
 		$unapprovedUsers = getAllUsersToBeApproved();
+		print_r($unapprovedUsers);
 		echo "<table id=\"approveUsers\">";
 		foreach ($unapprovedUsers as $userToApprove) { ?>
 			
 			<tr>
-				<td><?php echo $userToApprove; ?></td>
+				<td><?php echo $userToApprove->username; ?></td>
 				<td>
 					<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
 						<input type="submit" value="Approve"/>
-						<input type="hidden" name="username" value="<?php echo $userToApprove; ?>" />
+						<input type="hidden" name="username" value="<?php echo $userToApprove->username; ?>" />
 						<input type="hidden" name="approveUserFlag" value="true" />
 					</form>
 				</td>
