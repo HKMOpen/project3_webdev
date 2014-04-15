@@ -278,8 +278,8 @@ function disapproveNewUser($username) {
 	//same as approveNewUser, except it disapproves them
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->querry(sprintf($q->REMOVE_PENDING_USER, $username));
-	$db->querry(sprintf($q->REMOVE_USER, $username));
+	$db->query(sprintf($q->REMOVE_PENDING_USER, $username));
+	$db->query(sprintf($q->REMOVE_USER, $username));
 	mail($emailAddress,"Disapproved Message!","Saldy $username is not allowed to use colostatebook at this time :(");
 }
 
@@ -290,7 +290,7 @@ function requestChangePassword($username, $email, $ip) {
 	$q = new Querries();
 	$db = $q->getDB();
 	$key = md5($user->passwd.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
-	$db->querry(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
+	$db->query(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
 	$emailAddress = getUser($username)->email;
 	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~cmillard/project3/chpasswd.php?username=$username&key=$key");
 	
@@ -299,12 +299,12 @@ function requestChangePassword($username, $email, $ip) {
 function changePassword($username, $newPassword) {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->querry(sprintf($q->CHANGE_PASSWORD, $username, $newPassword));
+	$res = $db->query(sprintf($q->CHANGE_PASSWORD, $username, $newPassword));
 	if(!($res instanceof Sqlite3Result))
 	{
 		return false;
 	}
-	$res = $db->querry(sprintf($q->REMOVE_CHANGE_REQUEST, $username));
+	$res = $db->query(sprintf($q->REMOVE_CHANGE_REQUEST, $username));
 	$db->close();
 	return true;
 }
@@ -319,9 +319,9 @@ function getAllUsersToBeApproved()
 		return array();
 	}
 	$unames = array();
-	while($res1 = $res->fetchArray())
+	while($res = $array->fetchArray())
 	{
-		$temp = getUser($res1["username"]);
+		$temp = getUser($res["username"]);
 		array_push($unames,$temp);
 	}
 	$db->close();
