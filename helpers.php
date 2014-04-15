@@ -24,9 +24,23 @@ function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $p
 function setupDefaultUsers() {
 	$users = array();
 	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");
+$CREATE_USER
+	
 	$users[1] = makeNewUser("rawlin", saltedHash("rawlin", "rawlin"), "Rawlin", "Male", "5555555555", "blah@gmail.com", "1", "images/rawlin.jpg", "","","");
 	$users[2] = makeNewUser("prady", saltedHash("prady", "prady"), "Prady", "Male", "1111111111", "prady@mail.com", "1", "images/prady.jpg", "","","");
-	writeUsers($users);
+
+	writeNewUsers($users);
+}
+
+function writeNewUsers($users)
+{
+	$q = new Querries();
+	$db = $q->getDB();
+	foreach($users as $user)
+	{
+		$db->query(sprintf($q->CREATE_USER, $user->username, $user->password, $user->name,$user->gender,$user->phone,$user->email,$user->admin,$user->pic,$user->bio));
+	}
+	$db->close();
 }
 
 function writeUsers($users) {
@@ -53,7 +67,7 @@ function addPendingUser($user, $ipaddress)
 	$db->close();
 	$emailAddress = $user->email;
 	$uname = $user->username;
-	mail($emailAddress,"User Accepted!","A user named $uname has registerd for colostatebook, please visit: https://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key to confirm you exist! If this email is in error please ignore it <3 ");
+	mail($emailAddress,"User Request!","A user named $uname has registerd for colostatebook, please visit: https://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key to confirm you exist! If this email is in error please ignore it <3 ");
 }	
 
 function removePendingUsers($users)
@@ -276,7 +290,7 @@ function requestChangePassword($username, $email, $ip) {
 	$key = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
 	$db->querry(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
 	$emailAddress = getUser($username)->email;
-	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key");
+	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~cmillard/project3/chpasswd.php?username=$username&key=$key");
 	
 }
 
@@ -455,7 +469,7 @@ function savePost($post)
 	$db->close();
 }
 
-function requestRegisterAuthentication($username, $email, $password, $hash, $ipaddr)
+function requestRegisterAuthentication($username, $email, $password, $ipaddr)
 {
 	$user = new User();
 	$user->username=$username;
@@ -464,10 +478,10 @@ function requestRegisterAuthentication($username, $email, $password, $hash, $ipa
 	$user->gender="Unknown";
 	$user->phone="XXX-XXX-XXXX";
 	$user->email=$email;
-	$user->admin="false";
+	$user->admin="0";
 	$user->pic="./images/default.png";
 	$user->bio="Tell us something about yourself!";
-	addPendingUser($user);
+	addPendingUser($user,$ipaddr);
 }
 
 // returns true if $requestor is on $requestee's pending list
