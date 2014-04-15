@@ -275,7 +275,7 @@ function requestChangePassword($username, $email, $ip) {
 	$db = $q->getDB();
 	$key = md5($user->password.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
 	$db->querry(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
-	$emailAddress = $this->getUser($username)->email;
+	$emailAddress = getUser($username)->email;
 	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key");
 	
 }
@@ -340,7 +340,7 @@ function authenticateNewUser($username, $key, $ip) {
 			
 			return false;
 		}
-	return $this->authenticatePendingUser($username);
+	return authenticatePendingUser($username);
 	
 }
 
@@ -370,7 +370,7 @@ function approveNewUser($uname)
 			return FALSE;
 	}
 	$db->close();
-	$emailAddress = $this->getUser($uname)->email;
+	$emailAddress = getUser($uname)->email;
 	mail($emailAddress,"User Accepted!","A user named $uname has been approved by the admins addition to the colostatebook family!");
 	return true;
 }
@@ -459,7 +459,7 @@ function requestRegisterAuthentication($username, $email, $password, $hash, $ipa
 {
 	$user = new User();
 	$user->username=$username;
-	$user->passwd = md5($password);
+	$user->passwd = saltedHash($username,$password);
 	$user->name = $email;
 	$user->gender="Unknown";
 	$user->phone="XXX-XXX-XXXX";
