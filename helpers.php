@@ -113,7 +113,7 @@ function getUser($uname) {
 		return;
 	}
 	$res = $array->fetchArray();
-  	$user = makeNewUser($res["username"],$res["password"],$res["name"],$res["gender"],$res["phone"],$res["email"],$res["admin"],$res["pictureLocation"], null, null, $res["bio"]);
+  	$user = makeNewUser($res["username"],$res["password"],$res["name"],$res["gender"],$res["phone"],$res["email"],$res["admin"],$res["pictureLocation"], array(), array(), $res["bio"]);
 	$db->close();
 	$user->friends = getFriends($uname);
 	$user->pending = getRequests($uname);
@@ -259,13 +259,13 @@ function getPendingSystemUsers()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query($q->GET_PENDING_USERS);
-	if(!($res instanceof Sqlite3Result))
+	$array = $db->query($q->GET_PENDING_USERS);
+	if(!($array instanceof Sqlite3Result))
 	{
 		return array();
 	}
 	$unames = array();
-	while($res = $array[0])
+	while($res = $array->fetchArray())
 	{
 		$temp = getUser($res["username"]);
 		array_push($unames,$temp);
@@ -313,8 +313,8 @@ function getAllUsersToBeApproved()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query($q->GET_AUTHENTICATED_PANDING);
-	if(!($res instanceof Sqlite3Result))
+	$array = $db->query($q->GET_AUTHENTICATED_PANDING);
+	if(!($array instanceof Sqlite3Result))
 	{
 		return array();
 	}
@@ -426,7 +426,7 @@ function getUsersWallPosts($user)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
+	$array = $db->query(sprintf($q->GET_USER_WALL_COMMENTS, $user->username));
 	$posts = array();
 	while($res = $array->fetchArray())
 	{
@@ -444,7 +444,7 @@ function getPostsOnUserWall($user)
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query(sprintf($q->GET_COMMENTS_ON_USER_WALL, $user->username));
+	$array = $db->query(sprintf($q->GET_COMMENTS_ON_USER_WALL, $user->username));
 	$posts = array();
 	while($res = $array->fetchArray())
 	{
