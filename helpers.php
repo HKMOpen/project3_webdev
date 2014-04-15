@@ -23,9 +23,7 @@ function makeNewUser($uname, $pass, $name, $sex, $number, $mail, $privileges, $p
 
 function setupDefaultUsers() {
 	$users = array();
-	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");
-$CREATE_USER
-	
+	$users[0] = makeNewUser("blund", "2ba29d51f0a6c701cdaba3d51a9ede42", "Brian", "Male", "7209331750", "blund@email.com", "1", "images/brian.jpg", "","","");	
 	$users[1] = makeNewUser("rawlin", saltedHash("rawlin", "rawlin"), "Rawlin", "Male", "5555555555", "blah@gmail.com", "1", "images/rawlin.jpg", "","","");
 	$users[2] = makeNewUser("prady", saltedHash("prady", "prady"), "Prady", "Male", "1111111111", "prady@mail.com", "1", "images/prady.jpg", "","","");
 
@@ -38,7 +36,7 @@ function writeNewUsers($users)
 	$db = $q->getDB();
 	foreach($users as $user)
 	{
-		$db->query(sprintf($q->CREATE_USER, $user->username, $user->password, $user->name,$user->gender,$user->phone,$user->email,$user->admin,$user->pic,$user->bio));
+		$db->query(sprintf($q->CREATE_USER, $user->username, $user->passwd, $user->name,$user->gender,$user->phone,$user->email,$user->admin,$user->pic,$user->bio));
 	}
 	$db->close();
 }
@@ -311,13 +309,13 @@ function getAllUsersToBeApproved()
 {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query($q->GET_AUTHENTICATED_PANDING);
-	if(!($res instanceof Sqlite3Result))
+	$res1 = $db->query($q->GET_AUTHENTICATED_PANDING);
+	if(!($res1 instanceof Sqlite3Result))
 	{
 		return array();
 	}
 	$unames = array();
-	while($res = $array->fetchArray())
+	while($res = $res1->fetchArray())
 	{
 		$temp = getUser($res["username"]);
 		array_push($unames,$temp);
