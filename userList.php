@@ -24,15 +24,17 @@
 	<?php
 	$users = readUsers();
 	foreach($users as $u){
+		if (!isPendingUser($u->username)) {
 		$uname = $u->username;
 		$picture = $u->pic;
-	?>
-	<?php if(!in_array($u, getFriends($_SESSION['username']))){?>
+
+		if(!in_array($u, getFriends($_SESSION['username']))){?>
 		<div class="user">
 			<?php echo '<a href="profile.php?uname='.$uname.'"><img class="thumbnails" src="'.$picture.'" alt="user1" /></a>'; ?>
 			<?php echo $uname ?>
 		</div>
 	<?php
+	}
 	}
 	}
 	?>

@@ -10,23 +10,29 @@ include 'header.php';
 $error = "";
 
 if (isset ( $_POST ['username'] )) {
-	$uname = sanitize ( $_POST ['username'] );
-	$pass="";
-	if(isset($_POST['enteredPassword'])) $pass = $_POST['enteredPassword'];
-	// authentication
-	$users = readUsers();
-	foreach($users as $user){
-		if($user->username == $uname){
-			if(saltedHash($pass, $uname) == $user->passwd){
-				// authentication successful!
-				$_SESSION ['username'] = $uname;
-				$success = "User $uname logged in successfully!";
+	if (isPendingUser ( $_POST ['username'] )) {
+		$error = "Sorry, you are still a pending user. You may not login.";
+	} else {
+		$uname = sanitize ( $_POST ['username'] );
+		$pass = "";
+		if (isset ( $_POST ['enteredPassword'] ))
+			$pass = $_POST ['enteredPassword'];
+			// authentication
+		$users = readUsers ();
+		foreach ( $users as $user ) {
+			if ($user->username == $uname) {
+				if (saltedHash ( $pass, $uname ) == $user->passwd) {
+					// authentication successful!
+					$_SESSION ['username'] = $uname;
+					$success = "User $uname logged in successfully!";
+				} else
+					$error = "Invalid password for user $uname. Try again.";
+				break;
 			}
-			else $error = "Invalid password for user $uname. Try again.";
-			break;
 		}
+		if (empty ( $error ))
+			$error = "User $uname does not exist.";
 	}
-	if(empty($error)) $error = "User $uname does not exist.";	
 }
 
 if (isset ( $_POST ['logOutFlag'] )) {
@@ -38,7 +44,7 @@ include 'nav.php';
 ?>
 
 <div class="wrapper">
-<div class="left">
+	<div class="left">
 <?php if ($_SESSION['username'] == "guest") {?>
 		<h3>Log In</h3>
 		<form method="post"
@@ -57,7 +63,11 @@ include 'nav.php';
 				</tr>
 			</table>
 		</form>
-		<p>New User? <a style="border: 1px solid black; background-color: white;" href="register.php">Click here to register!</a></p>	
+		<p>
+			New User? <a
+				style="border: 1px solid black; background-color: white;"
+				href="register.php">Click here to register!</a>
+		</p>	
 <?php
 echo "<p>$error</p>";
 }

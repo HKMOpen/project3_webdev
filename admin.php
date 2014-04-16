@@ -52,7 +52,7 @@ if (isset($_POST['disapproveUserFlag'])) {
 				<td>
 					<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
 						<input type="submit" value="Disapprove"/>
-						<input type="hidden" name="username" value="<?php echo $userToApprove; ?>" />
+						<input type="hidden" name="username" value="<?php echo $userToApprove->username; ?>" />
 						<input type="hidden" name="disapproveUserFlag" value="true" />
 					</form>
 				</td>

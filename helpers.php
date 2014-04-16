@@ -278,6 +278,7 @@ function disapproveNewUser($username) {
 	//same as approveNewUser, except it disapproves them
 	$q = new Querries();
 	$db = $q->getDB();
+	$emailAddress = getUser($username)->email;
 	$db->query(sprintf($q->REMOVE_PENDING_USER, $username));
 	$db->query(sprintf($q->REMOVE_USER, $username));
 	mail($emailAddress,"Disapproved Message!","Saldy $username is not allowed to use colostatebook at this time :(");
@@ -287,20 +288,34 @@ function requestChangePassword($username, $email, $ip) {
 	//generate random key, store it in the DB, send authentication email
 	//to the user's email address, using link to chpasswd.php w/ key as a GET variable
 	//also store user's IP address in DB to make sure it matches when authenticating
+	
+	$user = getUser($username);
+	
 	$q = new Querries();
 	$db = $q->getDB();
-	$user = getUser($username);
 	$key = md5($user->passwd.$user->username."PROUDTOBEACSURAM".$user->email.	$user->username.$ip);
 	$db->query(sprintf($q->ADD_CHANGE_REQUEST, $username,$key, $ip ));
 	$emailAddress = getUser($username)->email;
-	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~cmillard/project3/chpasswd.php?username=$username&key=$key");
+	mail($emailAddress,"Password  Message!","Please copy and paste the following link into your browser to change your password: http://www.cs.colostate.edu/~rbpeters/project3/chpasswd.php?username=$username&key=$key");
 	
+}
+
+function getPWchangeIP($username) {
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->query(sprintf($q->GET_PW_CHANGE_IP, $username));
+	$array = $res->fetchArray();
+	if(!($res instanceof Sqlite3Result))
+	{
+		return "not an ip address";
+	}
+	return $array['ipaddress'];
 }
 
 function changePassword($username, $newPassword) {
 	$q = new Querries();
 	$db = $q->getDB();
-	$res = $db->query(sprintf($q->CHANGE_PASSWORD, $username, $newPassword));
+	$res = $db->query(sprintf($q->CHANGE_PASSWORD, $newPassword, $username));
 	if(!($res instanceof Sqlite3Result))
 	{
 		return false;
@@ -327,6 +342,25 @@ function getAllUsersToBeApproved()
 	}
 	$db->close();
 	return $unames;
+}
+
+function isPendingUser($username) {
+	$q= new Querries();
+	$db = $q->getDB();
+	$res = $db->query(sprintf($q->IS_PENDING_USER, $username));
+	if(!($res instanceof Sqlite3Result))
+	{
+		return false;
+	}
+	else {
+		$array = $res->fetchArray();
+		if ($array) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 }
 
 function authenticateNewUser($username, $key, $ip) {
@@ -408,7 +442,7 @@ function saveUser($user)
 		$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
 		foreach($user->friends as $friend)
 		{
-			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
+			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend->username));
 		}
 	}
 	if(count($user->pending)!=0)
@@ -416,7 +450,7 @@ function saveUser($user)
 		$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
 		foreach($user->pending as $pending)
 		{
-			$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
+			$db->query(sprintf($q->ADD_REQUEST,$pending->username,$user->username));
 		}
 	}
 	$db->close();
@@ -503,7 +537,16 @@ function isPending($requestor, $requestee){
 	return in_array($requestor, $pend);
 }
 
-
+function removePendingFriend($pendingFriends, $usernameToRemove) {
+	$newPending = array();
+	print_r($pendingFriends); //REMOVE
+	foreach ($pendingFriends as $pendingFriend) {
+		if ($pendingFriend->username != $usernameToRemove) {
+			$newPending[] = $pendingFriend;
+		}
+	}
+	return $newPending;
+}
 
 function createInitialDatabse() {
 	$q = new Querries();

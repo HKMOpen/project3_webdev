@@ -43,7 +43,7 @@ if (isset($_POST['addFriendFlag'])) {
 	
 	foreach($allUsers as $user) {
 		if ($user->username == $requestedUser) {
-			$user->pending[] = $signedInUser;
+			$user->pending[] = getUser($signedInUser);
 			break;
 		}
 	}

@@ -11,7 +11,7 @@ class Querries
 	public $GET_USER_PASSWORD="Select password from users where username='%s';";
 	public $GET_USER_SUMMARY="Select bio from users where username='%s'";
 	public $WRITE_USER_SUMMARY="Update users set bio='%s' where username='%s';";
-	public $GET_USER_FRIENDS="Select friend from friends where user='%s'";
+	public $GET_USER_FRIENDS="Select friend from friends where user='%s';";
 	
 	public $IS_FRIEND="SELECT CASE WHEN EXISTS (SELECT * FROM friends WHERE user='%s' and friend='%s') THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END;";
 	
@@ -54,11 +54,15 @@ class Querries
 
 	public $AUTHENTICATE_NEW_USER = "Select * from pendingUsers where hash='%s' and ipaddress='%s' and username='%s';";	
 	
+	public $IS_PENDING_USER = "SELECT username FROM pendingUsers WHERE username='%s';";
+	
 	public $CHANGE_PASSWORD = "update users set password='%s' where username='%s';";
+	
+	public $GET_PW_CHANGE_IP = "SELECT ipaddress FROM passwordChange WHERE username='%s';";
 
 	public $REMOVE_CHANGE_REQUEST = "delete from passwordChange where username='%s';";
 
-	public $ADD_CHANGE_REQUEST="insert into passwordChange values '%s','%s','%s';";
+	public $ADD_CHANGE_REQUEST="insert into passwordChange values ('%s','%s','%s');";
 
 	public $REMOVE_USER = "delete from users where username='%s';";
 
@@ -66,5 +70,6 @@ class Querries
 	{
 		return new SQLite3("./project3.db");
 	}
+	
 }
 ?>

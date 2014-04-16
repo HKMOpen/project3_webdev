@@ -12,6 +12,7 @@ $error = "";
 
 <?php
 if (isset($_POST['changePasswordFlag'])) { 
+	$username = strip_tags($_POST['username']);
 	$oldPW = $_POST['oldPassword'];
 	$newPW = $_POST['newPassword'];
 	$confirmPW = $_POST['confirmPassword'];
@@ -21,8 +22,19 @@ if (isset($_POST['changePasswordFlag'])) {
 		//TODO: Check that old password is correct, and make sure newPW and
 		// confirmPW match before changing password, also check that IP matches the DB
 		
-		changePassword($_POST['username'], $newPW);
-		echo "<p>Your password has been changed successfully. Please logout and log back in using your new password.</p>";
+		if (saltedHash($oldPW, $username) != getUser($username)->passwd) {
+			$error .= "Old password is incorrect. ";
+		}
+		else if ($newPW != $confirmPW) {
+			$error .= "Confirmed password does not match entered password. ";
+		}
+		else if ($ip != getPWchangeIP($username)) {
+			$error .= "You must change your password from the IP address you requested from. ";
+		}
+		else {
+			changePassword($_POST['username'], saltedHash($newPW, $username));
+			echo "<p>Your password has been changed successfully. Please logout and log back in using your new password.</p>";
+		}
 	}
 	else {
 		$error .= "Please make sure all fields are complete before submitting. ";
