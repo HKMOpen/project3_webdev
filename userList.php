@@ -5,8 +5,9 @@
 		<h3>Friends:</h3>
 		<?php
 		foreach (getFriends($_SESSION['username']) as $friend) {
-			$uname = $friend->username;
-			$picture = $friend->pic;
+			$friendUser = getUser($friend);
+			$uname = $friendUser->username;
+			$picture = $friendUser->pic;
 			?>
 			<div class="user">
 				<?php echo '<a href="profile.php?uname='.$uname.'">
@@ -28,7 +29,7 @@
 		$uname = $u->username;
 		$picture = $u->pic;
 
-		if(!in_array($u, getFriends($_SESSION['username']))){?>
+		if(!in_array($u->username, getFriends($_SESSION['username']))){?>
 		<div class="user">
 			<?php echo '<a href="profile.php?uname='.$uname.'"><img class="thumbnails" src="'.$picture.'" alt="user1" /></a>'; ?>
 			<?php echo $uname ?>

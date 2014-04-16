@@ -200,7 +200,7 @@ function getFriends($uname){
 	$friends=array();
 	while($res = $array->fetchArray())
 	{
-		$user = getUser($res["friend"]);
+		$user = $res["friend"];
 		array_push($friends,$user);
 	}
 	
@@ -442,7 +442,7 @@ function saveUser($user)
 		$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
 		foreach($user->friends as $friend)
 		{
-			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend->username));
+			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
 		}
 	}
 	if(count($user->pending)!=0)
@@ -450,7 +450,7 @@ function saveUser($user)
 		$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
 		foreach($user->pending as $pending)
 		{
-			$db->query(sprintf($q->ADD_REQUEST,$pending->username,$user->username));
+			$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
 		}
 	}
 	$db->close();
@@ -541,10 +541,11 @@ function removePendingFriend($pendingFriends, $usernameToRemove) {
 	$newPending = array();
 	print_r($pendingFriends); //REMOVE
 	foreach ($pendingFriends as $pendingFriend) {
-		if ($pendingFriend->username != $usernameToRemove) {
+		if ($pendingFriend != $usernameToRemove) {
 			$newPending[] = $pendingFriend;
 		}
 	}
+	print_r($newPending);
 	return $newPending;
 }
 
