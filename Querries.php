@@ -66,6 +66,8 @@ class Querries
 
 	public $REMOVE_USER = "delete from users where username='%s';";
 
+	public $NAME_TAKEN = "select username from users where username='%s';";
+
 	function getDB()
 	{
 		return new SQLite3("./project3.db");

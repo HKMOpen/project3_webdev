@@ -437,18 +437,16 @@ function saveUser($user)
 	}
 	
 	$db->query(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->bio, $user->username));
-	
 	$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
 	foreach($user->friends as $friend)
 	{
-		$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
+			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
 	}
-	
 	
 	$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
 	foreach($user->pending as $pending)
 	{
-		$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
+			$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
 	}
 	
 	$db->close();
@@ -537,11 +535,13 @@ function isPending($requestor, $requestee){
 
 function removePendingFriend($pendingFriends, $usernameToRemove) {
 	$newPending = array();
+	print_r($pendingFriends); //REMOVE
 	foreach ($pendingFriends as $pendingFriend) {
 		if ($pendingFriend != $usernameToRemove) {
 			$newPending[] = $pendingFriend;
 		}
 	}
+	print_r($newPending);
 	return $newPending;
 }
 
@@ -551,6 +551,33 @@ function createInitialDatabse() {
 	$db->query($q->CREATE_DATABASE);
 	$db->close();
 	setupDefaultUsers();
+}
+
+function nameExists($uname) {
+	$q = new Querries();
+	$db = $q->getDB();
+	$db->query(sprintf($q->NAME_TAKEN, $uname));
+	if(!($array instanceof Sqlite3Result))
+	{	
+		return FALSE;
+	}
+	if(!$array)
+	{	
+		return FALSE;
+	}
+	$db->close();
+	$ctr=0;
+	while($res=$array->fetchArray())
+	{
+		$ctr+=1;
+		
+	}	
+	if($ctr!=0)
+	{
+			
+		return FALSE;
+	}
+	return TRUE;
 }
 
 ?>
