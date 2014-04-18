@@ -11,13 +11,13 @@ if(!empty($decision) && !empty($uname)){
 		if($user->username == $_SESSION['username']){
 			if($decision == "accept"){
 				$user->friends[] = $uname;
+				$user->pending = removePendingFriend($user->pending, $uname);
 				$message = "You and $uname are now friends! Enjoy your online friendship.";
 			}
 			else {
 				$message = "Declined $uname's friend request.";
 				//remove $uname from pending
 				$user->pending = removePendingFriend($user->pending, $uname);
-				print_r($user->pending);
 			}
 		}
 		else if($user->username == $uname){

@@ -437,22 +437,20 @@ function saveUser($user)
 	}
 	
 	$db->query(sprintf($q->UPDATE_USER, $user->passwd, $user->name, $user->gender, $user->phone, $user->email, $user->admin, $user->pic, $user->bio, $user->username));
-	if(count($user->friends)!=0)
+	
+	$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
+	foreach($user->friends as $friend)
 	{
-		$db->query(sprintf($q->REMOVE_ALL_FRIENDS, $user->username));
-		foreach($user->friends as $friend)
-		{
-			$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
-		}
+		$db->query(sprintf($q->ADD_FRIEND, $user->username, $friend));
 	}
-	if(count($user->pending)!=0)
+	
+	
+	$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
+	foreach($user->pending as $pending)
 	{
-		$db->query(sprintf($q->REMOVE_ALL_PENDING, $user->username));
-		foreach($user->pending as $pending)
-		{
-			$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
-		}
+		$db->query(sprintf($q->ADD_REQUEST,$pending,$user->username));
 	}
+	
 	$db->close();
 	
 }
@@ -539,13 +537,11 @@ function isPending($requestor, $requestee){
 
 function removePendingFriend($pendingFriends, $usernameToRemove) {
 	$newPending = array();
-	print_r($pendingFriends); //REMOVE
 	foreach ($pendingFriends as $pendingFriend) {
 		if ($pendingFriend != $usernameToRemove) {
 			$newPending[] = $pendingFriend;
 		}
 	}
-	print_r($newPending);
 	return $newPending;
 }
 
