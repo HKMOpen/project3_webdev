@@ -65,7 +65,7 @@ include 'nav.php';
 		</form>
 		<p>
 			New User? <a
-				style="border: 1px solid black; background-color: white;"
+				style="border: 1px solid black; background-color: grey;"
 				href="register.php">Click here to register!</a>
 		</p>	
 <?php

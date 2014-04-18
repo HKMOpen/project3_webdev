@@ -535,11 +535,11 @@ function savePost($post)
 		$messageType="REPLY";
 	}
 	
-	$res = $db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
-	$db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
+	//$db->query("insert into communications (messageType, sender, reciever, time, message) values ('$messageType','$post->sender','$post->reciever',datetime(current_timestamp,'localtime'),'$post->message');");
+	$db->query(sprintf($q->SAVE_POST, $messageType, $post->sender, $post->reciever, $post->message));
 	if($messageType=="REPLY")
 	{
-		$db->query(sprintf($q->SAVE_POST_REPLY, $post->sender,$post->timeStamp,$post->repliedTo));
+		$db->query(sprintf($q->SAVE_POST_REPLY, $post->sender, $post->timeStamp, $post->repliedTo));
 	}
 
 	$db->close();
@@ -568,13 +568,11 @@ function isPending($requestor, $requestee){
 
 function removePendingFriend($pendingFriends, $usernameToRemove) {
 	$newPending = array();
-	print_r($pendingFriends); //REMOVE
 	foreach ($pendingFriends as $pendingFriend) {
 		if ($pendingFriend != $usernameToRemove) {
 			$newPending[] = $pendingFriend;
 		}
 	}
-	print_r($newPending);
 	return $newPending;
 }
 

@@ -1,7 +1,7 @@
 <?php
 include 'session_start.php';
 include 'helpers.php';
-//readUsers();
+readUsers();
 ?>
 
 <?php  echo  '<?xml version="1.0" encoding="utf-8"?>' ?>

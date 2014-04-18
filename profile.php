@@ -143,11 +143,14 @@ if (isset($_POST['submitCommentFlag'])) {
 	$sender = $_POST['sender'];
 	$receiver = $_POST['receiver'];
 	$message = sanitize($_POST['newComment']);
+	$message = preg_replace("/'/", "", $message);
 	if (strlen($message) > 500) {
 		$message = substr($message, 0, 500);
 	}
 	
 	//insert comment into database here...
+	$newPost = new Post(NULL, "NEW", $sender, $receiver, NULL, $message, "");
+	savePost($newPost);
 	
 }
 
@@ -156,7 +159,8 @@ if (isset($_POST['submitCommentFlag'])) {
 //BEGIN ADDING REPLY TO WALL
 
 if (isset($_POST['addReplyFlag'])) {
-//TODO:THIS
+	//TODO:THIS
+	
 }
 
 //END ADDING REPLY TO WALL
@@ -353,7 +357,7 @@ and replies within a "reply" div. -->
 				echo"<p id=\"$class\"><b>$post->sender:     </b>$post->message</p>";
 				if($class=='comment')
 				{
-					echo "<form method=\"post\" action=\"".htmlspecialchars($_SERVER['PHP_SELF']) ." \"?uname=$uname\";>";
+					echo "<form method=\"post\" action=\"".htmlspecialchars($_SERVER['PHP_SELF']) ."?uname=$uname\">";
 					echo"<input type=\"submit\" value=\"Reply\" />";
 					echo "<input type=\"hidden\" name=\"addReplyFlag\" value=\"true\"/>";
 					echo "<input type=\"hidden\" name=\"commentId\" value=\"$lastNewId\"/>";

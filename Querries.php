@@ -21,7 +21,7 @@ class Querries
 	
 	public $GET_USER_WALL_COMMENTS="select * from communications where sender='%s';";
 	
-	public $GET_COMMENTS_ON_USER_WALL="select * from communications where reciever='%s';";
+	public $GET_COMMENTS_ON_USER_WALL="select * from communications where reciever='%s' ORDER BY time DESC;";
 
 	public $GET_AUTHENTICATED_PANDING="select username from pendingUsers where authenticated='TRUE';";
 	
@@ -43,7 +43,7 @@ class Querries
 	
 	public $GET_REPLIES = "select * from communications where id in (select replyId from commentReplies where repliedTo='%s');";
 	
-	public $SAVE_POST = "insert into communications values ('%s','%s','%s','%s','%s');";
+	public $SAVE_POST = "insert into communications (messageType, sender, reciever, time, message) values ('%s', '%s', '%s', datetime(current_timestamp,'localtime'), '%s');";
 
 	public $SAVE_POST_REPLY = "insert into commentReplies values ((select id from communications where sender='%s' and timestamp='%s'), '%s');";	
 
