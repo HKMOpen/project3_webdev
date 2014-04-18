@@ -22,7 +22,7 @@ if (isset($_POST['registerFlag'])) {
 		$ip = $_POST['ip'];
 		
 		//TODO: add check to make sure username isn't taken
-		$takenUsername = false;
+		$takenUsername = nameExists($username);
 		if ($takenUsername) {
 			$error .= "Sorry, the requested username is already taken. Please choose another. ";
 		}

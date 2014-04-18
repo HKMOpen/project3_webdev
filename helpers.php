@@ -556,28 +556,36 @@ function createInitialDatabse() {
 function nameExists($uname) {
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->query(sprintf($q->NAME_TAKEN, $uname));
+	$array = $db->query(sprintf($q->NAME_TAKEN, $uname));
 	if(!($array instanceof Sqlite3Result))
 	{	
-		return FALSE;
+		return TRUE;
 	}
 	if(!$array)
 	{	
-		return FALSE;
+		return TRUE;
 	}
-	$db->close();
 	$ctr=0;
 	while($res=$array->fetchArray())
 	{
 		$ctr+=1;
 		
-	}	
+	}
+	$db->close();
 	if($ctr!=0)
 	{
 			
-		return FALSE;
+		return TRUE;
 	}
-	return TRUE;
+	return FALSE;
+}
+
+function countUsersToBeApproved() {
+	$q = new Querries();
+	$db = $q->getDB();
+	$res = $db->query($q->COUNT_TO_BE_APPROVED);
+	$array = $res->fetchArray();
+	return $array[0];
 }
 
 ?>

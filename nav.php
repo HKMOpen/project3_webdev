@@ -11,7 +11,7 @@
 	<a href="requests.php"><span class="navitem">Requests<?php echo "(" . count(getRequests($_SESSION['username'])) . ")"; ?></span></a>
 	<!-- TODO only show admin tab if logged in user has admin rights -->
 	<?php if($admin == "1"){?>
-	<a href="admin.php"><span class="navitem">Admin</span></a> 
+	<a href="admin.php"><span class="navitem">Admin<?php echo "(" . countUsersToBeApproved() . ")"; ?></span></a> 
 	<?php }}?>
 	<?php $status= ($_SESSION["username"]=="guest") ? "Log In" : "Log Out"; ?>
 	<a href="login.php"><span class="navitem"><?php echo $status?></span></a>

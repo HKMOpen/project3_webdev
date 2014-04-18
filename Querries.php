@@ -67,6 +67,8 @@ class Querries
 	public $REMOVE_USER = "delete from users where username='%s';";
 
 	public $NAME_TAKEN = "select username from users where username='%s';";
+	
+	public $COUNT_TO_BE_APPROVED = "SELECT COUNT(*) FROM pendingUsers WHERE authenticated='TRUE';";
 
 	function getDB()
 	{
