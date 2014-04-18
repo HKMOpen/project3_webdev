@@ -156,7 +156,7 @@ if (isset($_POST['submitCommentFlag'])) {
 //BEGIN ADDING REPLY TO WALL
 
 if (isset($_POST['addReplyFlag'])) {
-	//TODO: implement functionality for adding a reply to a comment, DB insert
+//TODO:THIS
 }
 
 //END ADDING REPLY TO WALL
@@ -328,23 +328,43 @@ and replies within a "reply" div. -->
 		
 	<?php }?>
 	
-	<div class="wallPost">
-		<p id="comment"><b>User1:</b> This is a wall post!</p>
-			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
-				<input type="submit" value="Reply" />
-				<input type="hidden" name="addReplyFlag" value="true"/>
-				<!-- NOTE: need some way to save the fact that the sender is
-				replying to a specific comment/reply... -->
-			</form>
-		
-		<p id="reply"><b>User 2:</b> Hey User1 what's up?</p>
-			<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . "?uname=$uname"; ?>">
-				<input type="submit" value="Reply" />
-				<input type="hidden" name="addReplyFlag" value="true"/>
-			</form>
-		
-	</div>
 	
+		<?php
+			$user = getUser($uname);
+			$posts=getPostsOnUserWall($user);
+			$first=TRUE;
+			$lastNewId="";
+			foreach($posts as $post)
+			{
+				if($post->messageType=='NEW')
+				{
+					$lastNewId=$post->Id;
+					if(!$first)
+					{
+						echo "</div>";
+					}
+					else
+					{
+						$first=FALSE;
+					}
+					echo "<div class=\"wallPost\">";
+				}
+				$class=$post->messageType == 'REPLY' ? "reply" : "comment";
+				echo"<p id=\"$class\"><b>$post->sender:     </b>$post->message</p>";
+				if($class=='comment')
+				{
+					echo "<form method=\"post\" action=\"".htmlspecialchars($_SERVER['PHP_SELF']) ." \"?uname=$uname\";>";
+					echo"<input type=\"submit\" value=\"Reply\" />";
+					echo "<input type=\"hidden\" name=\"addReplyFlag\" value=\"true\"/>";
+					echo "<input type=\"hidden\" name=\"commentId\" value=\"$lastNewId\"/>";
+					echo "</form>";
+				}
+				
+			}		
+		
+		?>		
+	
+</div>	
 </div>
 <!-- End Wall blueprint -->
 

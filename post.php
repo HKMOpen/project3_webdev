@@ -1,6 +1,7 @@
 <?php
 class Post
 {
+	public $Id;
 	public $messageType;
 	public $sender;
 	public $reciever;
@@ -8,8 +9,9 @@ class Post
 	public $message;
 	public $repliedTo;
 
-	function Post($messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
+	function Post($Id, $messageType, $sender, $reciever, $timeStamp, $message, $repliedTo)
 	{
+		$this->Id = $Id;
 		$this->messageType = $messageType;
  		$this->sender=$sender;
 		$this->reciever=$reciever; 
