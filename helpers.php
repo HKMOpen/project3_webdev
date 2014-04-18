@@ -464,7 +464,7 @@ function getUsersWallPosts($user)
 		$tempDB = $q->getDB();
 		$replyRes = $tempDB->query();
 		$res2=$db->query(sprintf($q->GET_POST_REPLY, $res["id"]));
-		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"],  $res2["repliedTo"]);
+		$temp = new Post($res['id'],$res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"],  $res2["repliedTo"]);
 		array_push($posts,$temp);
 	}
 	$db->close();
@@ -479,32 +479,65 @@ function getPostsOnUserWall($user)
 	$posts = array();
 	while($res = $array->fetchArray())
 	{
-		$tempDB = $q->getDB();
-		$replyRes = $tempDB->query();
-		$res2 = $db->query(sprintf($q->GET_POST_REPLY, $res["id"]));
-		$temp = new Post($res["messageType"], $res["sender"], $res["reciever"], $res["timeStamp"],$res["message"], $res["username"], $res2["repliedTo"]);
-		array_push($posts,$temp);
+		$topLevelPost = new Post($res['id'],$res["messageType"], $res["sender"], $res["reciever"], $res["time"],$res["message"],"");
+		array_push($posts,$topLevelPost);
+
 	}
 	$db->close();
+	sortWallPosts($posts);
 	return $posts;
 }
 
+function sortWallPosts($posts)
+{
+	$sorted=array();
+	for($i=0; $i<count($posts); ++$i)
+	{
+	    if($posts[$i]->repliedTo=="")
+	    {	
+		$sorted[]=$posts[$i];
+		$indexOfLowest=0;
+		while($indexOfLowest!=-1)
+		{
+			$indexOfLowest=-1;
+			for($j=0; $j<count($posts); ++$j)
+			{
+				if($posts[$j]->repliedTo==$posts[$j] and ($indexOfLowest==-1 or $posts[$j]->Id < $posts[$indexOfLowest]->Id))
+				{
+					$indexOfLowest=$j;
+				}
+			}
+			if(!$indexOfLowest==-1)
+			{
+				$sorted[]=$posts[$indexOfLowest];
+				unset($posts[$indexOfLowest]);
+				$posts=array_values($posts);
+				--$j;
+			}
+		}
+		unset($posts[$i]);
+		$posts=array_values($posts);
+		--$i;
+	    }
+	}
+}
 function savePost($post)
 {
 	$q = new Querries();
 	$db = $q->getDB();
 	$messageType;
-	if(count($repliedTo)==0)
+	if($post->repliedTo=="")
 	{
 		$messageType="NEW";
 	}
 	else
 	{
-		$messageType="RESPONSE";
+		$messageType="REPLY";
 	}
+	
 	$res = $db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
 	$db->query(sprintf($q->SAVE_POST, $messageType,$post->sender,$post->reciever,$post->timeStamp,$post->message));
-	if($messageType=="RESPONSE")
+	if($messageType=="REPLY")
 	{
 		$db->query(sprintf($q->SAVE_POST_REPLY, $post->sender,$post->timeStamp,$post->repliedTo));
 	}
@@ -556,14 +589,14 @@ function createInitialDatabse() {
 function nameExists($uname) {
 	$q = new Querries();
 	$db = $q->getDB();
-	$db->query(sprintf($q->NAME_TAKEN, $uname));
+	$array=$db->query(sprintf($q->NAME_TAKEN, $uname));
 	if(!($array instanceof Sqlite3Result))
 	{	
-		return FALSE;
+		return TRUE;
 	}
 	if(!$array)
 	{	
-		return FALSE;
+		return TRUE;
 	}
 	$db->close();
 	$ctr=0;
@@ -575,9 +608,9 @@ function nameExists($uname) {
 	if($ctr!=0)
 	{
 			
-		return FALSE;
+		return TRUE;
 	}
-	return TRUE;
+	return FALSE;
 }
 
 ?>
