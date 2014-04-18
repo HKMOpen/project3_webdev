@@ -159,7 +159,22 @@ if (isset($_POST['submitCommentFlag'])) {
 //BEGIN ADDING REPLY TO WALL
 
 if (isset($_POST['addReplyFlag'])) {
-	//TODO:THIS
+	echo "<h3>in adding a reply</h3>";
+	$sender = $_POST['sender'];
+	echo "<h3>Sender $sender</h3>";
+	$receiver = $_POST['receiver'];
+	echo "<h3>Reciever $receiver</h3>";
+	$commentId = $_POST['commentId'];
+	echo "<h3>Comment Id $commentId</h3>";
+	$message = sanitize($_POST['newComment']);
+	$message = preg_replace("/'/", "", $message);
+	if (strlen($message) > 500) {
+		$message = substr($message, 0, 500);
+	}
+	
+	//insert comment into database here...
+	$newPost = new Post(NULL, "REPLY", $sender, $receiver, NULL, $message, $commentId);
+	savePost($newPost);
 	
 }
 
@@ -331,9 +346,7 @@ and replies within a "reply" div. -->
 		</form>
 		
 	<?php }?>
-	
-	
-		<?php
+			<?php
 			$user = getUser($uname);
 			$posts=getPostsOnUserWall($user);
 			$first=TRUE;
@@ -358,9 +371,15 @@ and replies within a "reply" div. -->
 				if($class=='comment')
 				{
 					echo "<form method=\"post\" action=\"".htmlspecialchars($_SERVER['PHP_SELF']) ."?uname=$uname\">";
-					echo"<input type=\"submit\" value=\"Reply\" />";
+					
 					echo "<input type=\"hidden\" name=\"addReplyFlag\" value=\"true\"/>";
 					echo "<input type=\"hidden\" name=\"commentId\" value=\"$lastNewId\"/>";
+
+					echo "<input type=\"hidden\" name=\"sender\" value=\"".$_SESSION['username']."\" />";
+			echo "<input type=\"hidden\" name=\"receiver\" value=\"$uname\" />";
+			echo "<textarea name=\"newComment\" rows=\"6\" cols=\"30\">Have a reply?</textarea>";
+		echo"<input type=\"submit\" value=\"Reply\" />";
+
 					echo "</form>";
 				}
 				

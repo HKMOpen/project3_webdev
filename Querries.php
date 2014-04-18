@@ -45,7 +45,7 @@ class Querries
 	
 	public $SAVE_POST = "insert into communications (messageType, sender, reciever, time, message) values ('%s', '%s', '%s', datetime(current_timestamp,'localtime'), '%s');";
 
-	public $SAVE_POST_REPLY = "insert into commentReplies values ((select id from communications where sender='%s' and timestamp='%s'), '%s');";	
+	public $SAVE_POST_REPLY = "insert into commentReplies (replyId, replyId) values ('%s', '%s');";	
 
 	public $GET_POST_REPLY = "select replyId from commentReplies where repliedTo='%s';";	
 

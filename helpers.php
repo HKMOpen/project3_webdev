@@ -536,10 +536,11 @@ function savePost($post)
 	}
 	
 	//$db->query("insert into communications (messageType, sender, reciever, time, message) values ('$messageType','$post->sender','$post->reciever',datetime(current_timestamp,'localtime'),'$post->message');");
-	$db->query(sprintf($q->SAVE_POST, $messageType, $post->sender, $post->reciever, $post->message));
+	$res = $db->query(sprintf($q->SAVE_POST, $messageType, $post->sender, $post->reciever, $post->message));
+	$array=$res->fetchArray();
 	if($messageType=="REPLY")
 	{
-		$db->query(sprintf($q->SAVE_POST_REPLY, $post->sender, $post->timeStamp, $post->repliedTo));
+		$db->query(sprintf($q->SAVE_POST_REPLY, $array["id"], $post->repliedTo));
 	}
 
 	$db->close();
