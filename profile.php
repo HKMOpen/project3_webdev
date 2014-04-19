@@ -375,7 +375,7 @@ and replies within a "reply" div. -->
 				}
 				$class=$post->messageType == 'REPLY' ? "reply" : "comment";
 				echo"<p id=\"$class\"><b>$post->sender:     </b>$post->message</p>";
-				if($class=='comment' && isFriend($_SESSION['username'], $uname))
+				if($class=='comment' && (isFriend($_SESSION['username'], $uname) || $_SESSION['username'] == $uname))
 				{
 					echo "<form method=\"post\" action=\"".htmlspecialchars($_SERVER['PHP_SELF']) ."?uname=$uname\">";
 					echo '<textarea name="newReply" rows="2" cols="30">Add reply?</textarea>';
